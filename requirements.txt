@@ -1,0 +1,31 @@
+# Python 3.11, macOS Apple Silicon에서 검증한 버전
+# 설치 후: python -m spacy download en_core_web_sm
+# 외부 프로그램: Google Chrome(1단계), ffmpeg(2단계, brew install ffmpeg)
+
+# 공통
+numpy==1.26.4
+pandas==3.0.6
+tqdm==4.70.1
+
+# 1단계: 멜론 크롤링
+selenium==4.50.0
+
+# 2단계: 음원 다운로드 + 오디오 피처
+yt-dlp==2026.8.19
+librosa==0.11.0
+praat-parselmouth==0.4.7
+
+# 3단계: 딥러닝
+tensorflow==2.16.2
+keras==3.15.1
+scikit-learn==1.9.1
+
+# 4단계: 가사 형태소 분석
+# kiwipiepy는 버전마다 형태소 분석 결과가 달라짐. 0.23.x가 원본 결과(_baseline)를 재현함 (0.24.0은 1곡 색이 바뀜)
+kiwipiepy==0.23.2
+kiwipiepy_model==0.23.0
+spacy==3.8.16
+
+# 6단계: 시각화
+matplotlib==3.11.2
+koreanize-matplotlib==0.1.1
