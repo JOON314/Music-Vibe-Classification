@@ -92,9 +92,12 @@ CSV_ENCODING = "utf-8-sig"
 # 1단계: 멜론 가사 크롤링
 # ─────────────────────────────────────────────
 MELON_URL = "https://www.melon.com"
-LYRICS_NO_RESULT = "검색 결과 없음"
-LYRICS_ERROR_PREFIX = "오류: "
-LYRICS_MISSING_INPUT = "가수/제목 없음"
+# 가사 칸에는 실제 가사만 넣고, 성공/실패는 lyrics_status 컬럼으로 분리
+LYRICS_OK = "ok"
+LYRICS_NO_RESULT = "no_result"        # 멜론 검색 결과 없음
+LYRICS_ERROR = "error"                # 크롤링 중 예외 (lyrics_error에 메시지)
+LYRICS_MISSING_INPUT = "missing_input"  # Playlist.csv에 제목/아티스트 없음
+LYRICS_EMPTY = "empty"                # 곡 페이지는 열렸지만 가사가 비어 있음
 
 
 # ─────────────────────────────────────────────

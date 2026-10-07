@@ -1,7 +1,8 @@
 """1단계: 멜론에서 곡별 가사를 크롤링한다.
 
 입력: input/Playlist.csv (title, artist)
-출력: outputs/01_lyrics.csv (song_id, title, artist, lyrics)
+출력: outputs/01_lyrics.csv (song_id, title, artist, lyrics, lyrics_status, lyrics_error)
+실패한 곡은 lyrics를 비워 두고 lyrics_status에 사유를 남긴다 → 4단계에서 자동 제외.
 """
 from __future__ import annotations
 
@@ -21,8 +22,8 @@ def _is_missing(value: object) -> bool:
     return s == "" or s == "nan" or s == "<NA>"
 
 
-def get_lyrics(driver, wait, title: str, artist: str) -> str:
-    """멜론에서 한 곡의 가사를 가져온다. 실패하면 안내 문자열을 돌려준다(원본 동작 유지)."""
+def get_lyrics(driver, wait, title: str, artist: str) -> tuple[str | None, str, str]:
+    """멜론에서 한 곡의 가사를 가져온다. (가사 또는 None, 상태, 오류 메시지)를 돌려준다."""
     from selenium.webdriver.common.by import By
     from selenium.webdriver.common.keys import Keys
     from selenium.webdriver.support import expected_conditions as EC
@@ -45,7 +46,7 @@ def get_lyrics(driver, wait, title: str, artist: str) -> str:
 
         more_info_list = driver.find_elements(By.CSS_SELECTOR, ".btn.btn_icon_detail")
         if len(more_info_list) == 0:
-            return config.LYRICS_NO_RESULT
+            return None, config.LYRICS_NO_RESULT, ""
 
         more_info_list[0].click()
         time.sleep(2)
@@ -56,11 +57,15 @@ def get_lyrics(driver, wait, title: str, artist: str) -> str:
         except Exception:
             pass
 
-        lyric = driver.find_element(By.CSS_SELECTOR, ".lyric.on")
-        return lyric.text.strip()
+        text = driver.find_element(By.CSS_SELECTOR, ".lyric.on").text.strip()
+        if not text:
+            return None, config.LYRICS_EMPTY, ""
+        return text, config.LYRICS_OK, ""
 
-    except Exception as e:  # noqa: BLE001 - 원본과 같이 곡 단위 실패는 문자열로 기록
-        return f"{config.LYRICS_ERROR_PREFIX}{e}"
+    except Exception as e:  # noqa: BLE001 - 곡 단위 실패는 기록하고 다음 곡으로
+        msg = str(e).strip().splitlines()[0] if str(e).strip() else type(e).__name__
+        log.warning("  가사 실패: %s - %s (%s)", artist, title, msg)
+        return None, config.LYRICS_ERROR, msg
 
 
 def run(cfg: config.Config) -> pd.DataFrame:
@@ -73,16 +78,18 @@ def run(cfg: config.Config) -> pd.DataFrame:
 
     driver = webdriver.Chrome()
     wait = WebDriverWait(driver, 10)
-    lyrics_list: list[str] = []
+    results: list[tuple[str | None, str, str]] = []
     try:
         for row in tqdm(df.itertuples(index=False), total=len(df)):
             if _is_missing(row.title) or _is_missing(row.artist):
-                lyrics_list.append(config.LYRICS_MISSING_INPUT)
+                results.append((None, config.LYRICS_MISSING_INPUT, ""))
                 continue
-            lyrics_list.append(get_lyrics(driver, wait, str(row.title), str(row.artist)))
+            results.append(get_lyrics(driver, wait, str(row.title), str(row.artist)))
     finally:
         driver.quit()
 
-    df["lyrics"] = lyrics_list
+    df["lyrics"], df["lyrics_status"], df["lyrics_error"] = zip(*results) if results else ([], [], [])
+    n_ok = (df["lyrics_status"] == config.LYRICS_OK).sum()
+    log.info("가사 수집: %d/%d곡 성공", n_ok, len(df))
     write_csv(df, cfg.lyrics_csv, log)
     return df
