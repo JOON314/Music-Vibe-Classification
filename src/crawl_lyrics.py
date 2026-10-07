@@ -36,6 +36,7 @@ def get_lyrics(driver, title: str, artist: str) -> tuple[str | None, str, str]:
     from selenium.webdriver.support.ui import WebDriverWait
 
     wait = WebDriverWait(driver, config.CRAWL_TIMEOUT)
+    stage = "멜론 접속"
     try:
         driver.get(config.MELON_URL)
 
@@ -49,6 +50,7 @@ def get_lyrics(driver, title: str, artist: str) -> tuple[str | None, str, str]:
         search_box.clear()
         search_box.send_keys(keyword)
         search_box.send_keys(Keys.RETURN)
+        stage = "검색 결과"
         wait.until(EC.url_contains("search"))
 
         # 검색 결과의 '곡 정보' 버튼: 일정 시간 안에 안 나오면 결과 없음으로 판단
@@ -59,25 +61,28 @@ def get_lyrics(driver, title: str, artist: str) -> tuple[str | None, str, str]:
         except TimeoutException:
             return None, config.LYRICS_NO_RESULT, ""
 
+        stage = "곡 상세 페이지"
         detail_btn.click()
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".lyric")))
 
-        # 가사 '펼치기' 버튼이 있으면 눌러서 전체 가사 표시
-        more = driver.find_elements(By.CSS_SELECTOR, ".button_more.arrow_d")
-        if more:
-            try:
-                more[0].click()
-            except Exception:  # noqa: BLE001 - 펼치기 실패는 무시(원본 동작)
-                pass
-
-        lyric = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".lyric.on")))
-        text = lyric.text.strip()
+        # 가사 '펼치기' 버튼이 클릭 가능해지면 눌러서 전체 가사 표시 (.lyric → .lyric.on)
+        stage = "가사 영역"
+        short_wait = WebDriverWait(driver, config.CRAWL_RESULT_TIMEOUT)
+        try:
+            short_wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".button_more.arrow_d"))).click()
+            text = short_wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".lyric.on"))).text.strip()
+        except TimeoutException:
+            # 펼치기 버튼이 없거나 눌러도 펼쳐지지 않으면, 접힌 상태의 가사 전체 텍스트(innerText)를 읽음
+            log.debug("  펼치기 실패 → .lyric innerText 사용: %s - %s", artist, title)
+            text = (driver.find_element(By.CSS_SELECTOR, ".lyric").get_attribute("innerText") or "").strip()
         if not text:
             return None, config.LYRICS_EMPTY, ""
         return text, config.LYRICS_OK, ""
 
     except Exception as e:  # noqa: BLE001 - 곡 단위 실패는 기록하고 다음 곡으로
-        msg = str(e).strip().splitlines()[0] if str(e).strip() else type(e).__name__
+        detail = str(e).strip().splitlines()[0] if str(e).strip() else ""
+        msg = f"{stage}: {type(e).__name__} {detail}".strip()
         log.warning("  가사 실패: %s - %s (%s)", artist, title, msg)
         return None, config.LYRICS_ERROR, msg
 
