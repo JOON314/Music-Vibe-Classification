@@ -24,6 +24,8 @@ class Config:
     models_dir: Path = ROOT_DIR / "models"
     # 유튜브 음원 임시 다운로드 위치 (원본 동작: 프로젝트 루트)
     audio_tmp_dir: Path = field(default=ROOT_DIR)
+    # True면 저장된 모델이 있어도 3단계에서 다시 학습
+    retrain: bool = False
 
     # ── 학습 데이터·사전 (data/)
     @property
@@ -78,6 +80,18 @@ class Config:
     @property
     def figure_png(self) -> Path:            # 6단계
         return self.output_dir / "playlist_analysis.png"
+
+    # ── 학습된 모델 (models/)
+    def fold_model_path(self, fold: int) -> Path:
+        return self.models_dir / f"fold_{fold}.keras"
+
+    @property
+    def scalers_path(self) -> Path:
+        return self.models_dir / "scalers.joblib"
+
+    @property
+    def model_meta_path(self) -> Path:
+        return self.models_dir / "train_meta.json"
 
     def ensure_dirs(self) -> None:
         """출력 폴더가 없으면 만든다."""

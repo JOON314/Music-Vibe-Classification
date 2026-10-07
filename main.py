@@ -6,6 +6,7 @@
     python main.py --steps 1,3,5
     python main.py --skip-crawl     # 1단계(멜론 크롤링) 제외
     python main.py --offline        # 네트워크 단계(1·2) 제외
+    python main.py --steps 3 --retrain  # 모델 다시 학습
 """
 from __future__ import annotations
 
@@ -55,6 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
                    help="실행할 단계 (예: 4-6, 1,3,5). 기본: 전체")
     p.add_argument("--skip-crawl", action="store_true", help="1단계(가사 크롤링) 제외")
     p.add_argument("--offline", action="store_true", help="네트워크가 필요한 1·2단계 제외")
+    p.add_argument("--retrain", action="store_true", help="저장된 모델이 있어도 3단계에서 다시 학습")
     p.add_argument("--input", type=str, default=None, help="플레이리스트 CSV 경로 (기본: input/Playlist.csv)")
     p.add_argument("--output-dir", type=str, default=None, help="산출물 폴더 (기본: outputs/)")
     p.add_argument("-v", "--verbose", action="store_true", help="DEBUG 로그 출력")
@@ -65,7 +67,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     setup_logging(logging.DEBUG if args.verbose else logging.INFO)
 
-    cfg = config.Config()
+    cfg = config.Config(retrain=args.retrain)
     if args.input:
         cfg.input_csv = Path(args.input).resolve()
     if args.output_dir:
