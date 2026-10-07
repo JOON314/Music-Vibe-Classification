@@ -167,6 +167,9 @@ FEAT_COLS: list[str] = [
     "pcm_fftMag_mfcc_sma[4]_amean",
 ]
 
+DOWNLOAD_ATTEMPTS = 3      # 유튜브 다운로드 시도 횟수 (간헐적 HTTP 403 대비)
+DOWNLOAD_RETRY_WAIT = 10   # 재시도 대기(초) × 시도 번호
+
 # 오디오 피처 추출기
 #   "opensmile": 실제 openSMILE ComParE_2016 LLD의 곡 평균 — DEAM 학습 피처와 같은 도구 (기본)
 #   "librosa"  : 원본 프로젝트의 librosa/parselmouth 근사 — DEAM과 스케일이 크게 달라(도메인 시프트) 비교용으로만 유지

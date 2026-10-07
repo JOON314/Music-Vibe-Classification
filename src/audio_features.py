@@ -15,6 +15,7 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
+import time
 import warnings
 from contextlib import nullcontext
 from functools import lru_cache
@@ -41,10 +42,22 @@ def download_audio(title: str, artist: str, out_path: Path) -> Path:
                             "preferredcodec": "wav",
                             "preferredquality": "192"}],
         "quiet": True, "no_warnings": True, "noprogress": True,
+        "retries": 10, "fragment_retries": 10,
     }
     log.info("[다운로드] %s - %s", artist, title)
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([f"ytsearch1:{query}"])
+    # 유튜브는 간헐적으로 HTTP 403을 돌려줌(같은 곡도 몇 분 뒤엔 성공) → 간격을 두고 재시도
+    for attempt in range(1, config.DOWNLOAD_ATTEMPTS + 1):
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([f"ytsearch1:{query}"])
+            break
+        except yt_dlp.utils.DownloadError as e:
+            if attempt == config.DOWNLOAD_ATTEMPTS:
+                raise
+            wait_s = config.DOWNLOAD_RETRY_WAIT * attempt
+            log.warning("  다운로드 실패(%d/%d), %d초 후 재시도: %s",
+                        attempt, config.DOWNLOAD_ATTEMPTS, wait_s, str(e).splitlines()[0])
+            time.sleep(wait_s)
     if not wav_file.exists():
         raise FileNotFoundError(wav_file)
     return wav_file
