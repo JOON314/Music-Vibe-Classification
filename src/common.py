@@ -30,7 +30,7 @@ def load_playlist(path: Path) -> pd.DataFrame:
 
     title/artist 앞뒤 공백은 제거한다(원본 3·5단계의 strip과 동일).
     """
-    df = pd.read_csv(path, encoding=config.CSV_ENCODING)
+    df = pd.read_csv(path, encoding=config.CSV_ENCODING, dtype=str)  # 숫자 제목도 문자열로
     df.columns = df.columns.str.strip()
     missing = {"title", "artist"} - set(df.columns)
     if missing:

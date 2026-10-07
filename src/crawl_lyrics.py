@@ -2,35 +2,42 @@
 
 입력: input/Playlist.csv (title, artist)
 출력: outputs/01_lyrics.csv (song_id, title, artist, lyrics, lyrics_status, lyrics_error)
+캐시: outputs/cache/lyrics_cache.csv — 이미 가사를 받은 (title, artist)는 다시 크롤링하지 않음
+
 실패한 곡은 lyrics를 비워 두고 lyrics_status에 사유를 남긴다 → 4단계에서 자동 제외.
 """
 from __future__ import annotations
 
-import time
-
 import pandas as pd
 
 import config
-from src.common import get_logger, load_playlist, write_csv
+from src.common import get_logger, load_playlist, read_csv, write_csv
 
 log = get_logger(__name__)
 
+CACHE_COLS = ["title", "artist", "lyrics"]
+
 
 def _is_missing(value: object) -> bool:
-    """빈 칸·NaN 여부 (원본: str 변환 후 '' 또는 'nan')."""
+    """빈 칸·NaN 여부."""
     s = "" if value is None else str(value).strip()
     return s == "" or s == "nan" or s == "<NA>"
 
 
-def get_lyrics(driver, wait, title: str, artist: str) -> tuple[str | None, str, str]:
-    """멜론에서 한 곡의 가사를 가져온다. (가사 또는 None, 상태, 오류 메시지)를 돌려준다."""
+def get_lyrics(driver, title: str, artist: str) -> tuple[str | None, str, str]:
+    """멜론에서 한 곡의 가사를 가져온다. (가사 또는 None, 상태, 오류 메시지)를 돌려준다.
+
+    고정 sleep 대신 요소가 나타날 때까지 기다린다(WebDriverWait).
+    """
+    from selenium.common.exceptions import TimeoutException
     from selenium.webdriver.common.by import By
     from selenium.webdriver.common.keys import Keys
     from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.support.ui import WebDriverWait
 
+    wait = WebDriverWait(driver, config.CRAWL_TIMEOUT)
     try:
         driver.get(config.MELON_URL)
-        time.sleep(2)
 
         # 원본 검색어 순서 유지: "아티스트 제목"
         keyword = f"{artist} {title}"
@@ -42,22 +49,29 @@ def get_lyrics(driver, wait, title: str, artist: str) -> tuple[str | None, str, 
         search_box.clear()
         search_box.send_keys(keyword)
         search_box.send_keys(Keys.RETURN)
-        time.sleep(3)
+        wait.until(EC.url_contains("search"))
 
-        more_info_list = driver.find_elements(By.CSS_SELECTOR, ".btn.btn_icon_detail")
-        if len(more_info_list) == 0:
+        # 검색 결과의 '곡 정보' 버튼: 일정 시간 안에 안 나오면 결과 없음으로 판단
+        try:
+            detail_btn = WebDriverWait(driver, config.CRAWL_RESULT_TIMEOUT).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, ".btn.btn_icon_detail"))
+            )
+        except TimeoutException:
             return None, config.LYRICS_NO_RESULT, ""
 
-        more_info_list[0].click()
-        time.sleep(2)
+        detail_btn.click()
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".lyric")))
 
-        try:
-            driver.find_element(By.CSS_SELECTOR, ".button_more.arrow_d").click()
-            time.sleep(1)
-        except Exception:
-            pass
+        # 가사 '펼치기' 버튼이 있으면 눌러서 전체 가사 표시
+        more = driver.find_elements(By.CSS_SELECTOR, ".button_more.arrow_d")
+        if more:
+            try:
+                more[0].click()
+            except Exception:  # noqa: BLE001 - 펼치기 실패는 무시(원본 동작)
+                pass
 
-        text = driver.find_element(By.CSS_SELECTOR, ".lyric.on").text.strip()
+        lyric = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".lyric.on")))
+        text = lyric.text.strip()
         if not text:
             return None, config.LYRICS_EMPTY, ""
         return text, config.LYRICS_OK, ""
@@ -68,28 +82,56 @@ def get_lyrics(driver, wait, title: str, artist: str) -> tuple[str | None, str, 
         return None, config.LYRICS_ERROR, msg
 
 
+def load_cache(cfg: config.Config) -> dict[tuple[str, str], str]:
+    """(title, artist) → 가사 캐시. 캐시를 쓰지 않거나 파일이 없으면 빈 dict."""
+    if not cfg.use_cache or not cfg.lyrics_cache_csv.exists():
+        return {}
+    df = read_csv(cfg.lyrics_cache_csv, dtype=str).dropna(subset=CACHE_COLS)
+    return {(r.title, r.artist): r.lyrics for r in df.itertuples(index=False)}
+
+
+def save_cache(cfg: config.Config, cache: dict[tuple[str, str], str]) -> None:
+    """성공한 가사만 캐시에 저장."""
+    df = pd.DataFrame([(t, a, l) for (t, a), l in cache.items()], columns=CACHE_COLS)
+    write_csv(df, cfg.lyrics_cache_csv)
+
+
 def run(cfg: config.Config) -> pd.DataFrame:
-    """플레이리스트 전체 가사를 크롤링해 01_lyrics.csv로 저장한다."""
-    from selenium import webdriver
-    from selenium.webdriver.support.ui import WebDriverWait
-    from tqdm import tqdm
-
+    """플레이리스트 전체 가사를 수집(캐시 우선)해 01_lyrics.csv로 저장한다."""
     df = load_playlist(cfg.input_csv)
+    cache = load_cache(cfg)
 
-    driver = webdriver.Chrome()
-    wait = WebDriverWait(driver, 10)
-    results: list[tuple[str | None, str, str]] = []
-    try:
-        for row in tqdm(df.itertuples(index=False), total=len(df)):
-            if _is_missing(row.title) or _is_missing(row.artist):
-                results.append((None, config.LYRICS_MISSING_INPUT, ""))
-                continue
-            results.append(get_lyrics(driver, wait, str(row.title), str(row.artist)))
-    finally:
-        driver.quit()
+    results: dict[int, tuple[str | None, str, str]] = {}
+    to_crawl = []
+    for row in df.itertuples(index=False):
+        if _is_missing(row.title) or _is_missing(row.artist):
+            results[row.song_id] = (None, config.LYRICS_MISSING_INPUT, "")
+        elif (row.title, row.artist) in cache:
+            results[row.song_id] = (cache[(row.title, row.artist)], config.LYRICS_OK, "")
+        else:
+            to_crawl.append(row)
+    if cache:
+        log.info("캐시 사용: %d곡, 새로 크롤링: %d곡", len(df) - len(to_crawl), len(to_crawl))
 
-    df["lyrics"], df["lyrics_status"], df["lyrics_error"] = zip(*results) if results else ([], [], [])
-    n_ok = (df["lyrics_status"] == config.LYRICS_OK).sum()
-    log.info("가사 수집: %d/%d곡 성공", n_ok, len(df))
+    if to_crawl:
+        from selenium import webdriver
+        from tqdm import tqdm
+
+        driver = webdriver.Chrome()
+        try:
+            for row in tqdm(to_crawl):
+                results[row.song_id] = get_lyrics(driver, str(row.title), str(row.artist))
+                lyrics, status, _ = results[row.song_id]
+                if status == config.LYRICS_OK:
+                    cache[(row.title, row.artist)] = lyrics
+        finally:
+            driver.quit()
+        if cfg.use_cache:
+            save_cache(cfg, cache)
+
+    df["lyrics"] = [results[i][0] for i in df["song_id"]]
+    df["lyrics_status"] = [results[i][1] for i in df["song_id"]]
+    df["lyrics_error"] = [results[i][2] for i in df["song_id"]]
+    log.info("가사 수집: %d/%d곡 성공", (df["lyrics_status"] == config.LYRICS_OK).sum(), len(df))
     write_csv(df, cfg.lyrics_csv, log)
     return df

@@ -26,6 +26,8 @@ class Config:
     audio_tmp_dir: Path | None = None
     # True면 저장된 모델이 있어도 3단계에서 다시 학습
     retrain: bool = False
+    # True면 이미 받은 가사·오디오 피처(outputs/cache/)를 재사용
+    use_cache: bool = True
 
     # ── 학습 데이터·사전 (data/)
     @property
@@ -77,6 +79,19 @@ class Config:
     def song_emotion_color_csv(self) -> Path:  # 5단계
         return self.output_dir / "05_song_emotion_color.csv"
 
+    # ── 캐시 (outputs/cache/)
+    @property
+    def cache_dir(self) -> Path:
+        return self.output_dir / "cache"
+
+    @property
+    def lyrics_cache_csv(self) -> Path:
+        return self.cache_dir / "lyrics_cache.csv"
+
+    @property
+    def audio_cache_csv(self) -> Path:
+        return self.cache_dir / "audio_features_cache.csv"
+
     @property
     def final_csv(self) -> Path:             # 6단계
         return self.output_dir / "final_result.csv"
@@ -99,7 +114,7 @@ class Config:
 
     def ensure_dirs(self) -> None:
         """출력 폴더가 없으면 만든다."""
-        for d in (self.output_dir, self.models_dir):
+        for d in (self.output_dir, self.cache_dir, self.models_dir):
             d.mkdir(parents=True, exist_ok=True)
 
 
@@ -110,6 +125,8 @@ CSV_ENCODING = "utf-8-sig"
 # 1단계: 멜론 가사 크롤링
 # ─────────────────────────────────────────────
 MELON_URL = "https://www.melon.com"
+CRAWL_TIMEOUT = 10         # 페이지 요소를 기다리는 최대 시간(초)
+CRAWL_RESULT_TIMEOUT = 5   # 검색 결과가 없다고 판단할 때까지 기다리는 시간(초)
 # 가사 칸에는 실제 가사만 넣고, 성공/실패는 lyrics_status 컬럼으로 분리
 LYRICS_OK = "ok"
 LYRICS_NO_RESULT = "no_result"        # 멜론 검색 결과 없음

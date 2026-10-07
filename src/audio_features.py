@@ -3,6 +3,8 @@
 입력: input/Playlist.csv
 출력: outputs/02_audio_features.csv (song_id, title, artist, FEAT_COLS...)
       outputs/02_audio_failed.csv (실패한 곡과 사유 — 실패 곡은 3단계 이후 예측값이 비어 있음)
+캐시: outputs/cache/audio_features_cache.csv — 이미 피처를 뽑은 (title, artist)는 다시 받지 않음
+     (피처 계산 코드를 바꿨다면 --no-cache로 새로 뽑을 것)
 
 학습 데이터(DEAM)는 openSMILE 피처, 여기서는 librosa/parselmouth로 같은 이름의 값을 근사한다.
 """
@@ -17,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 import config
-from src.common import get_logger, load_playlist, write_csv
+from src.common import get_logger, load_playlist, read_csv, write_csv
 
 log = get_logger(__name__)
 
@@ -169,12 +171,31 @@ def _cleanup(stem: Path) -> None:
         p.unlink(missing_ok=True)
 
 
+def _load_cache(cfg: config.Config) -> dict[tuple[str, str], dict[str, float]]:
+    """(title, artist) → 피처 dict. 캐시 미사용·파일 없음·피처 목록 불일치면 빈 dict."""
+    if not cfg.use_cache or not cfg.audio_cache_csv.exists():
+        return {}
+    df = read_csv(cfg.audio_cache_csv, dtype={"title": str, "artist": str})
+    if list(df.columns) != ["title", "artist", *config.FEAT_COLS]:
+        log.warning("오디오 캐시의 피처 목록이 config와 달라 무시합니다: %s", cfg.audio_cache_csv)
+        return {}
+    return {(r["title"], r["artist"]): {c: r[c] for c in config.FEAT_COLS}
+            for r in df.to_dict("records")}
+
+
+def _save_cache(cfg: config.Config, cache: dict[tuple[str, str], dict[str, float]]) -> None:
+    rows = [{"title": t, "artist": a, **f} for (t, a), f in cache.items()]
+    write_csv(pd.DataFrame(rows, columns=["title", "artist", *config.FEAT_COLS]), cfg.audio_cache_csv)
+
+
 def run(cfg: config.Config) -> pd.DataFrame:
     """플레이리스트 곡별로 다운로드 → 피처 추출 후 02_audio_features.csv로 저장한다."""
     warnings.filterwarnings("ignore")
     playlist = load_playlist(cfg.input_csv)
     rows: list[dict] = []
     failed: list[dict] = []
+    cache = _load_cache(cfg)
+    n_cached = 0
 
     tmp_ctx = (nullcontext(str(cfg.audio_tmp_dir)) if cfg.audio_tmp_dir
                else tempfile.TemporaryDirectory(prefix="playlist_audio_"))
@@ -186,21 +207,32 @@ def run(cfg: config.Config) -> pd.DataFrame:
             if not isinstance(title, str) or not isinstance(artist, str) or not title or not artist:
                 failed.append({**ids, "reason": "제목/아티스트 없음"})
                 continue
+            if (title, artist) in cache:
+                rows.append({**ids, **cache[(title, artist)]})
+                n_cached += 1
+                continue
             log.info("[%d/%d] %s - %s", i, len(playlist), artist, title)
             stem = Path(tmp_dir) / f"song_{song.song_id}"  # 곡 이름의 특수문자(/ 등) 문제 회피
             try:
                 wav = download_audio(title, artist, stem)
-                rows.append({**ids, **extract_features(wav)})
+                feats = extract_features(wav)
+                rows.append({**ids, **feats})
+                cache[(title, artist)] = feats
             except Exception as e:  # noqa: BLE001 - 곡 단위 실패는 기록하고 다음 곡으로
                 log.error("  [실패] %s - %s: %s", artist, title, e)
                 failed.append({**ids, "reason": str(e).strip().splitlines()[0] if str(e).strip() else type(e).__name__})
             finally:
                 _cleanup(stem)
 
+    if n_cached:
+        log.info("오디오 캐시 사용: %d곡", n_cached)
+    if cfg.use_cache:
+        _save_cache(cfg, cache)
+
     failed_df = pd.DataFrame(failed, columns=["song_id", "title", "artist", "reason"])
     write_csv(failed_df, cfg.audio_failed_csv, log)
     if failed:
-        log.warning("오디오 피처 실패 %d곡: %s", len(failed), ", ".join(failed_df["title"].astype(str)))
+        log.warning("오디오 피처 실패 %d곡: %s", len(failed), ", ".join(f"{t}" for t in failed_df["title"]))
 
     # 성공 0곡이어도 파일은 새로 씀 (원본은 쓰지 않아 이전 실행의 오래된 파일이 3단계에 쓰였음)
     out = pd.DataFrame(rows, columns=["song_id", "title", "artist", *config.FEAT_COLS])

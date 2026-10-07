@@ -57,6 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--skip-crawl", action="store_true", help="1단계(가사 크롤링) 제외")
     p.add_argument("--offline", action="store_true", help="네트워크가 필요한 1·2단계 제외")
     p.add_argument("--retrain", action="store_true", help="저장된 모델이 있어도 3단계에서 다시 학습")
+    p.add_argument("--no-cache", action="store_true", help="가사·오디오 피처 캐시를 쓰지 않고 새로 받음")
     p.add_argument("--input", type=str, default=None, help="플레이리스트 CSV 경로 (기본: input/Playlist.csv)")
     p.add_argument("--output-dir", type=str, default=None, help="산출물 폴더 (기본: outputs/)")
     p.add_argument("-v", "--verbose", action="store_true", help="DEBUG 로그 출력")
@@ -67,7 +68,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     setup_logging(logging.DEBUG if args.verbose else logging.INFO)
 
-    cfg = config.Config(retrain=args.retrain)
+    cfg = config.Config(retrain=args.retrain, use_cache=not args.no_cache)
     if args.input:
         cfg.input_csv = Path(args.input).resolve()
     if args.output_dir:
