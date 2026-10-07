@@ -7,7 +7,7 @@
      (피처 계산 코드를 바꿨다면 --no-cache로 새로 뽑을 것)
 
 추출기(config.AUDIO_EXTRACTOR)
-  - opensmile (기본): DEAM과 같은 openSMILE ComParE_2016 LLD의 곡 전체 평균
+  - opensmile (기본): DEAM과 같은 openSMILE ComParE_2016 LLD의 곡 전체 평균 (음량은 DEAM 중앙값에 맞춤)
   - librosa: 원본 프로젝트의 근사 구현. DEAM과 스케일이 수백~수천 σ 달라(docs/phase2_분석.md) 비교용
 """
 from __future__ import annotations
@@ -95,17 +95,43 @@ def _opensmile_extractor():
                   feature_level=opensmile.FeatureLevel.LowLevelDescriptors)
 
 
-def extract_features_opensmile(wav_path: Path) -> dict[str, float]:
-    """openSMILE ComParE_2016 LLD를 곡 전체 프레임 평균 → FEAT_COLS 24개.
+@lru_cache(maxsize=1)
+def deam_loudness_target() -> float:
+    """음량 정규화 목표: DEAM 학습 곡들의 RMS 에너지 피처 중앙값."""
+    deam = pd.read_csv(config.Config().deam_features_csv, usecols=[config.LOUDNESS_REF_FEATURE])
+    return float(deam[config.LOUDNESS_REF_FEATURE].median())
 
-    DEAM 피처(output.csv)도 openSMILE 프레임 값을 곡별로 평균한 것(참고자료/Data process.py)이라 같은 방식.
-    """
-    lld = _opensmile_extractor().process_file(str(wav_path))
+
+def _lld_means(lld: pd.DataFrame) -> dict[str, float]:
+    """LLD 프레임 값의 곡 전체 평균 → FEAT_COLS 이름."""
     feats = {}
     for col in config.FEAT_COLS:
         name = col.removesuffix("_amean")
         name = config.OPENSMILE_RENAME.get(name, name)
         feats[col] = float(np.nanmean(lld[name].to_numpy(dtype=float)))
+    return feats
+
+
+def extract_features_opensmile(wav_path: Path) -> dict[str, float]:
+    """openSMILE ComParE_2016 LLD를 곡 전체 프레임 평균 → FEAT_COLS 24개.
+
+    DEAM 피처(deam_features_mean.csv)도 openSMILE 프레임 값을 곡별로 평균한 것(참고자료/Data process.py).
+    LOUDNESS_NORMALIZE면 RMS 에너지 평균이 DEAM 중앙값이 되도록 파형에 gain을 곱한 뒤 다시 추출한다
+    (RMS 에너지는 gain에 정비례하므로 한 번에 맞춰짐).
+    """
+    import soundfile as sf
+
+    smile = _opensmile_extractor()
+    signal, sr = sf.read(str(wav_path), dtype="float32", always_2d=True)
+    signal = signal[:, 0]  # openSMILE 기본과 같이 첫 채널
+
+    feats = _lld_means(smile.process_signal(signal, sr))
+    if config.LOUDNESS_NORMALIZE:
+        current = feats[config.LOUDNESS_REF_FEATURE]
+        if current > 0:
+            gain = deam_loudness_target() / current
+            log.debug("  음량 정규화 gain %.3f (%.1f dB)", gain, 20 * np.log10(gain))
+            feats = _lld_means(smile.process_signal(signal * gain, sr))
     return feats
 
 

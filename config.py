@@ -92,7 +92,8 @@ class Config:
     @property
     def audio_cache_csv(self) -> Path:
         # 추출기별로 따로 저장 (librosa 값과 openSMILE 값이 섞이지 않게)
-        return self.cache_dir / f"audio_features_cache_{AUDIO_EXTRACTOR}.csv"
+        norm = "_norm" if AUDIO_EXTRACTOR == "opensmile" and LOUDNESS_NORMALIZE else ""
+        return self.cache_dir / f"audio_features_cache_{AUDIO_EXTRACTOR}{norm}.csv"
 
     @property
     def final_csv(self) -> Path:             # 6단계
@@ -174,6 +175,12 @@ DOWNLOAD_RETRY_WAIT = 10   # 재시도 대기(초) × 시도 번호
 #   "opensmile": 실제 openSMILE ComParE_2016 LLD의 곡 평균 — DEAM 학습 피처와 같은 도구 (기본)
 #   "librosa"  : 원본 프로젝트의 librosa/parselmouth 근사 — DEAM과 스케일이 크게 달라(도메인 시프트) 비교용으로만 유지
 AUDIO_EXTRACTOR = "opensmile"
+# 음량 정규화: 곡마다 openSMILE RMS 에너지 평균을 DEAM 1802곡의 중앙값에 맞춘 뒤 피처를 뽑는다.
+# 요즘 음원은 DEAM 클립보다 1.7~3.7배(평균 +8.5dB) 커서 에너지 계열 피처가 DEAM 범위 끝에 몰렸고,
+# 그 결과 Arousal 예측이 좁게 압축됐다(docs/phase2_분석.md 4절). openSMILE 추출기에서만 적용.
+LOUDNESS_NORMALIZE = True
+LOUDNESS_REF_FEATURE = "pcm_RMSenergy_sma_amean"
+
 # openSMILE ComParE_2016 LLD 이름 ↔ DEAM 피처 이름(_amean 제거, MFCC는 'pcm_fftMag_' 접두어 없음)
 OPENSMILE_RENAME = {"pcm_fftMag_mfcc_sma[1]": "mfcc_sma[1]", "pcm_fftMag_mfcc_sma[4]": "mfcc_sma[4]"}
 

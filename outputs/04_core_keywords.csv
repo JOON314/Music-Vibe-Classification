@@ -1,0 +1,183 @@
+﻿song_id,title,word,pos,lang,count
+5,Follow you(따라갈래),baby,noun,eng,9
+5,Follow you(따라갈래),모르,verb,kor,5
+5,Follow you(따라갈래),따라가,verb,kor,5
+5,Follow you(따라갈래),친구,noun,kor,3
+5,Follow you(따라갈래),괜찮,adjective,kor,3
+5,Follow you(따라갈래),처음,noun,kor,2
+5,Follow you(따라갈래),기다리,verb,kor,2
+6,Jersey girl,jersey,noun,eng,8
+6,Jersey girl,town,noun,eng,4
+6,Jersey girl,stay,verb,eng,4
+6,Jersey girl,daddy,noun,eng,3
+6,Jersey girl,brother,noun,eng,2
+6,Jersey girl,asleep,adjective,eng,2
+6,Jersey girl,sleep,verb,eng,2
+6,Jersey girl,tell,verb,eng,2
+6,Jersey girl,friend,noun,eng,2
+6,Jersey girl,let,verb,eng,2
+6,Jersey girl,hope,verb,eng,2
+6,Jersey girl,true,adjective,eng,2
+6,Jersey girl,safe,adjective,eng,2
+6,Jersey girl,sound,adjective,eng,2
+6,Jersey girl,work,verb,eng,2
+6,Jersey girl,cvs,noun,eng,2
+6,Jersey girl,think,verb,eng,2
+6,Jersey girl,candy,noun,eng,2
+6,Jersey girl,steal,verb,eng,2
+6,Jersey girl,everyday,noun,eng,2
+6,Jersey girl,time,noun,eng,2
+6,Jersey girl,job,noun,eng,2
+6,Jersey girl,blockbuster,noun,eng,2
+6,Jersey girl,burn,verb,eng,2
+6,Jersey girl,dvd,noun,eng,2
+7,Love you the same,love,verb,eng,6
+7,Love you the same,friend,noun,eng,5
+7,Love you the same,come,verb,eng,3
+7,Love you the same,lover,noun,eng,3
+7,Love you the same,feel,verb,eng,3
+7,Love you the same,confused,adjective,eng,3
+7,Love you the same,play,verb,eng,2
+7,Love you the same,talk,noun,eng,2
+7,Love you the same,know,verb,eng,2
+7,Love you the same,fuck,verb,eng,2
+7,Love you the same,town,noun,eng,2
+7,Love you the same,good,adjective,eng,2
+8,Powder blue,blue,adjective,eng,10
+8,Powder blue,powder,noun,eng,8
+8,Powder blue,베이비,noun,kor,2
+8,Powder blue,달아나,verb,kor,2
+8,Powder blue,부끄럼,noun,kor,2
+8,Powder blue,뻔하,adjective,kor,2
+8,Powder blue,순간,noun,kor,2
+8,Powder blue,열리,verb,kor,2
+8,Powder blue,love,noun,eng,2
+8,Powder blue,cliche,noun,eng,2
+8,Powder blue,wanna,verb,eng,2
+8,Powder blue,paint,verb,eng,2
+8,Powder blue,rock,noun,eng,2
+8,Powder blue,roll,noun,eng,2
+8,Powder blue,wet,adjective,eng,2
+8,Powder blue,dream,noun,eng,2
+8,Powder blue,come,verb,eng,2
+8,Powder blue,true,adjective,eng,2
+4,Sunday girl,jesus,noun,eng,6
+4,Sunday girl,hot,adjective,eng,2
+4,Sunday girl,baby,noun,eng,2
+4,Sunday girl,예전,noun,kor,2
+4,Sunday girl,대답,noun,kor,2
+4,Sunday girl,want,verb,eng,2
+4,Sunday girl,hallelujah,noun,eng,2
+9,Tent,텐트,noun,kor,5
+9,Tent,구두,noun,kor,4
+9,Tent,운동화,noun,kor,3
+9,Tent,린다,noun,kor,3
+9,Tent,왼쪽,noun,kor,2
+9,Tent,갈색,noun,kor,2
+13,echo,사랑,noun,kor,4
+13,echo,혼자,noun,kor,3
+13,echo,시간,noun,kor,3
+13,echo,슬프,adjective,kor,2
+13,echo,돌아오,verb,kor,2
+13,echo,마음,noun,kor,2
+13,echo,울음,noun,kor,2
+13,echo,이야기,noun,kor,2
+13,echo,오늘,noun,kor,2
+12,seasons,life,noun,eng,4
+12,seasons,love,noun,eng,3
+12,seasons,season,noun,eng,3
+12,seasons,pray,verb,eng,2
+12,seasons,time,noun,eng,2
+1,곰팡이,피우,verb,kor,5
+1,곰팡이,사랑,noun,kor,5
+1,곰팡이,곰팡이,noun,kor,2
+1,곰팡이,끝나,verb,kor,2
+1,곰팡이,마음,noun,kor,2
+1,곰팡이,보이,verb,kor,2
+1,곰팡이,습기,noun,kor,2
+1,곰팡이,창문,noun,kor,2
+1,곰팡이,소리,noun,kor,2
+1,곰팡이,키우,verb,kor,2
+1,곰팡이,어쩌,verb,kor,2
+16,노세노세,노세,noun,kor,12
+16,노세노세,시간,noun,kor,5
+16,노세노세,나이,noun,kor,4
+16,노세노세,시계,noun,kor,4
+16,노세노세,시작,noun,kor,3
+16,노세노세,움직이,verb,kor,3
+16,노세노세,다리,noun,kor,3
+16,노세노세,genesis,verb,eng,3
+16,노세노세,hop,noun,eng,3
+16,노세노세,냅두,verb,kor,3
+16,노세노세,이재용,noun,kor,3
+16,노세노세,파티,noun,kor,3
+16,노세노세,똥구멍,noun,kor,3
+16,노세노세,beautiful,adjective,eng,3
+16,노세노세,shawty,noun,eng,3
+16,노세노세,부르,verb,kor,3
+2,돌연변이,birthday,noun,eng,15
+2,돌연변이,want,verb,eng,9
+2,돌연변이,look,verb,eng,4
+2,돌연변이,feel,verb,eng,3
+2,돌연변이,go,verb,eng,3
+2,돌연변이,wrong,adjective,eng,3
+2,돌연변이,live,verb,eng,3
+2,돌연변이,tonight,noun,eng,3
+2,돌연변이,blend,verb,eng,2
+2,돌연변이,die,verb,eng,2
+14,사랑하게 될거야,사랑,noun,kor,4
+14,사랑하게 될거야,휘몰아치,verb,kor,3
+14,사랑하게 될거야,불구하,verb,kor,3
+14,사랑하게 될거야,용서,noun,kor,3
+14,사랑하게 될거야,떠나보내,verb,kor,2
+3,어린양,sin,noun,eng,2
+3,어린양,diose,verb,eng,2
+3,어린양,reye,noun,eng,2
+3,어린양,solo,noun,eng,2
+3,어린양,조금,noun,kor,2
+3,어린양,배우,verb,kor,2
+3,어린양,어리,adjective,kor,2
+15,완공,yellow,noun,eng,10
+15,완공,monkey,noun,eng,10
+15,완공,완공,noun,kor,7
+15,완공,squad,noun,eng,7
+15,완공,music,noun,eng,5
+15,완공,각본,noun,kor,5
+15,완공,natural,adjective,eng,5
+15,완공,magic,noun,eng,5
+15,완공,소주,noun,kor,3
+15,완공,원샷,noun,kor,3
+15,완공,브라보,noun,kor,3
+15,완공,빨뚜,noun,kor,3
+15,완공,classic,noun,eng,3
+15,완공,신보,noun,kor,3
+15,완공,assassin,noun,eng,3
+15,완공,brand,noun,eng,2
+15,완공,new,adjective,eng,2
+15,완공,요즘,noun,kor,2
+15,완공,국산,noun,kor,2
+15,완공,외치,verb,kor,2
+15,완공,kia,noun,eng,2
+10,파란달팽이,이제,noun,kor,10
+10,파란달팽이,이번,noun,kor,10
+10,파란달팽이,처음,noun,kor,10
+10,파란달팽이,마지막,noun,kor,10
+10,파란달팽이,노력,noun,kor,2
+10,파란달팽이,받아들이,verb,kor,2
+10,파란달팽이,편하,adjective,kor,2
+10,파란달팽이,피하,verb,kor,2
+10,파란달팽이,돌아가,verb,kor,2
+11,포커페이스,모르,verb,kor,13
+11,포커페이스,시간,noun,kor,3
+11,포커페이스,부서지,verb,kor,3
+11,포커페이스,소리,noun,kor,3
+11,포커페이스,취하,verb,kor,2
+11,포커페이스,그림자,noun,kor,2
+11,포커페이스,패션,noun,kor,2
+11,포커페이스,스타일,noun,kor,2
+11,포커페이스,실수,noun,kor,2
+11,포커페이스,자리,noun,kor,2
+11,포커페이스,채우,verb,kor,2
+11,포커페이스,꼴통,noun,kor,2
+11,포커페이스,오해,noun,kor,2
+11,포커페이스,오래전,noun,kor,2
