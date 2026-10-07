@@ -200,6 +200,11 @@ def run(cfg: config.Config) -> pd.DataFrame:
     df_test = read_csv(cfg.audio_features_csv)
     df_test.columns = df_test.columns.str.strip()
     test_features = df_test[config.FEAT_COLS].values
+    if len(df_test) == 0:
+        log.warning("예측할 곡이 없습니다 (02_audio_features.csv가 비어 있음).")
+        result = pd.DataFrame(columns=[*ID_COLS, *config.PRED_COLS])
+        write_csv(result, cfg.va_predictions_csv, log)
+        return result
 
     if cfg.retrain or not has_saved_models(cfg):
         set_seeds()

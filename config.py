@@ -5,7 +5,7 @@ CLAUDE.md의 도메인 규칙이므로 승인 없이 바꾸지 않는다.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent
@@ -22,8 +22,8 @@ class Config:
     data_dir: Path = ROOT_DIR / "data"
     output_dir: Path = ROOT_DIR / "outputs"
     models_dir: Path = ROOT_DIR / "models"
-    # 유튜브 음원 임시 다운로드 위치 (원본 동작: 프로젝트 루트)
-    audio_tmp_dir: Path = field(default=ROOT_DIR)
+    # 유튜브 음원 임시 다운로드 위치. None이면 실행마다 시스템 임시 폴더를 만들고 끝나면 삭제
+    audio_tmp_dir: Path | None = None
     # True면 저장된 모델이 있어도 3단계에서 다시 학습
     retrain: bool = False
 
@@ -48,6 +48,10 @@ class Config:
     @property
     def audio_features_csv(self) -> Path:    # 2단계
         return self.output_dir / "02_audio_features.csv"
+
+    @property
+    def audio_failed_csv(self) -> Path:      # 2단계 실패 목록
+        return self.output_dir / "02_audio_failed.csv"
 
     @property
     def va_predictions_csv(self) -> Path:    # 3단계

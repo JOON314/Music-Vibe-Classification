@@ -2,12 +2,15 @@
 
 입력: input/Playlist.csv
 출력: outputs/02_audio_features.csv (song_id, title, artist, FEAT_COLS...)
+      outputs/02_audio_failed.csv (실패한 곡과 사유 — 실패 곡은 3단계 이후 예측값이 비어 있음)
 
 학습 데이터(DEAM)는 openSMILE 피처, 여기서는 librosa/parselmouth로 같은 이름의 값을 근사한다.
 """
 from __future__ import annotations
 
+import tempfile
 import warnings
+from contextlib import nullcontext
 from pathlib import Path
 
 import numpy as np
@@ -17,9 +20,6 @@ import config
 from src.common import get_logger, load_playlist, write_csv
 
 log = get_logger(__name__)
-
-_TMP_EXTS = (".wav", ".webm", ".m4a", ".mp4")
-
 
 def download_audio(title: str, artist: str, out_path: Path) -> Path:
     """유튜브 검색 첫 결과를 wav로 받는다. out_path는 확장자 없는 경로."""
@@ -164,11 +164,9 @@ def extract_features(wav_path: Path) -> dict[str, float]:
 
 
 def _cleanup(stem: Path) -> None:
-    """다운로드 임시 파일 삭제."""
-    for ext in _TMP_EXTS:
-        p = Path(f"{stem}{ext}")
-        if p.exists():
-            p.unlink()
+    """한 곡의 다운로드 임시 파일(확장자 무관) 삭제."""
+    for p in stem.parent.glob(f"{stem.name}.*"):
+        p.unlink(missing_ok=True)
 
 
 def run(cfg: config.Config) -> pd.DataFrame:
@@ -176,26 +174,37 @@ def run(cfg: config.Config) -> pd.DataFrame:
     warnings.filterwarnings("ignore")
     playlist = load_playlist(cfg.input_csv)
     rows: list[dict] = []
+    failed: list[dict] = []
 
-    for i, song in enumerate(playlist.itertuples(index=False), 1):
-        title, artist = song.title, song.artist
-        if not isinstance(title, str) or not isinstance(artist, str) or not title or not artist:
-            continue
-        log.info("[%d/%d] %s - %s", i, len(playlist), artist, title)
-        stem = Path(cfg.audio_tmp_dir) / f"{artist}_{title}".replace(" ", "_")
-        try:
-            wav = download_audio(title, artist, stem)
-            rows.append({"song_id": song.song_id, "title": title, "artist": artist,
-                         **extract_features(wav)})
-            _cleanup(stem)
-        except Exception as e:  # noqa: BLE001 - 곡 단위 실패는 건너뜀(원본 동작)
-            log.error("  [에러] %s", e)
-            continue
+    tmp_ctx = (nullcontext(str(cfg.audio_tmp_dir)) if cfg.audio_tmp_dir
+               else tempfile.TemporaryDirectory(prefix="playlist_audio_"))
+    with tmp_ctx as tmp_dir:
+        Path(tmp_dir).mkdir(parents=True, exist_ok=True)
+        for i, song in enumerate(playlist.itertuples(index=False), 1):
+            title, artist = song.title, song.artist
+            ids = {"song_id": song.song_id, "title": title, "artist": artist}
+            if not isinstance(title, str) or not isinstance(artist, str) or not title or not artist:
+                failed.append({**ids, "reason": "제목/아티스트 없음"})
+                continue
+            log.info("[%d/%d] %s - %s", i, len(playlist), artist, title)
+            stem = Path(tmp_dir) / f"song_{song.song_id}"  # 곡 이름의 특수문자(/ 등) 문제 회피
+            try:
+                wav = download_audio(title, artist, stem)
+                rows.append({**ids, **extract_features(wav)})
+            except Exception as e:  # noqa: BLE001 - 곡 단위 실패는 기록하고 다음 곡으로
+                log.error("  [실패] %s - %s: %s", artist, title, e)
+                failed.append({**ids, "reason": str(e).strip().splitlines()[0] if str(e).strip() else type(e).__name__})
+            finally:
+                _cleanup(stem)
 
-    if not rows:
-        log.warning("피처를 추출한 곡이 없습니다. 파일을 쓰지 않습니다.")
-        return pd.DataFrame(columns=["song_id", "title", "artist", *config.FEAT_COLS])
+    failed_df = pd.DataFrame(failed, columns=["song_id", "title", "artist", "reason"])
+    write_csv(failed_df, cfg.audio_failed_csv, log)
+    if failed:
+        log.warning("오디오 피처 실패 %d곡: %s", len(failed), ", ".join(failed_df["title"].astype(str)))
 
-    out = pd.DataFrame(rows)[["song_id", "title", "artist", *config.FEAT_COLS]]
+    # 성공 0곡이어도 파일은 새로 씀 (원본은 쓰지 않아 이전 실행의 오래된 파일이 3단계에 쓰였음)
+    out = pd.DataFrame(rows, columns=["song_id", "title", "artist", *config.FEAT_COLS])
+    if out.empty:
+        log.warning("피처를 추출한 곡이 없습니다.")
     write_csv(out, cfg.audio_features_csv, log)
     return out
