@@ -36,25 +36,45 @@ def to_signed(x: float) -> float:
     return _clamp((x - config.VA_CENTER) / config.VA_HALF_RANGE)
 
 
-def _three_level(score: float, labels: tuple[str, str, str]) -> str:
+def _three_level(score: float, labels: tuple[str, str, str], low: float, high: float) -> str:
     if _is_nan(score):
         return config.FAILED_LABEL
-    t = config.LABEL_THRESHOLD
-    if score > t:
+    if score > high:
         return labels[0]
-    if score > -t:
+    if score > low:
         return labels[1]
     return labels[2]
 
 
-def valence_label(v: float) -> str:
-    """Valence → 밝은/담담한/우울한."""
-    return _three_level(v, config.VALENCE_LABELS)
+def get_thresholds(cfg: config.Config) -> dict[str, tuple[float, float]]:
+    """형용사 임계값 (DEAM 척도, (낮은 경계, 높은 경계)).
+
+    calibrated: models/train_meta.json의 OOF 3등분 값. 없으면 경고 후 fixed.
+    fixed: 원본 ±0.2 → (x-5)/5 기준이라 DEAM 척도로 4.0 / 6.0.
+    """
+    t = config.LABEL_THRESHOLD
+    fixed = {k: (config.VA_CENTER - t * config.VA_HALF_RANGE, config.VA_CENTER + t * config.VA_HALF_RANGE)
+             for k in ("valence", "arousal")}
+    if config.LABEL_THRESHOLD_MODE != "calibrated":
+        return fixed
+    from src.mood_model import load_label_thresholds
+
+    saved = load_label_thresholds(cfg)
+    if not saved:
+        log.warning("보정 임계값이 없습니다(%s). 원본 ±0.2 기준을 씁니다. --steps 3 --retrain으로 다시 학습하세요.",
+                    cfg.model_meta_path)
+        return fixed
+    return {k: (saved[k][0], saved[k][1]) for k in ("valence", "arousal")}
 
 
-def arousal_label(a: float) -> str:
-    """Arousal → 활기찬/포근한/차분한."""
-    return _three_level(a, config.AROUSAL_LABELS)
+def valence_label(v: float, low: float, high: float) -> str:
+    """Valence 예측값(DEAM 척도) → 밝은/담담한/우울한."""
+    return _three_level(v, config.VALENCE_LABELS, low, high)
+
+
+def arousal_label(a: float, low: float, high: float) -> str:
+    """Arousal 예측값(DEAM 척도) → 활기찬/포근한/차분한."""
+    return _three_level(a, config.AROUSAL_LABELS, low, high)
 
 
 def build_final_table(cfg: config.Config) -> pd.DataFrame:
@@ -75,10 +95,12 @@ def build_final_table(cfg: config.Config) -> pd.DataFrame:
         log.warning("%s 없음 → main_color_text 비움", cfg.song_emotion_color_csv)
         df["main_color_text"] = pd.NA
 
-    df["valence_score"] = df["valence_mean_pred"].apply(to_signed)
+    th = get_thresholds(cfg)
+    log.info("형용사 임계값 (%s): Valence %s, Arousal %s", config.LABEL_THRESHOLD_MODE, th["valence"], th["arousal"])
+    df["valence_score"] = df["valence_mean_pred"].apply(to_signed)   # 그래프 좌표 (-1~1)
     df["arousal_score"] = df["arousal_mean_pred"].apply(to_signed)
-    df["valence_label"] = df["valence_score"].apply(valence_label)
-    df["arousal_label"] = df["arousal_score"].apply(arousal_label)
+    df["valence_label"] = [valence_label(v, *th["valence"]) for v in df["valence_mean_pred"]]
+    df["arousal_label"] = [arousal_label(a, *th["arousal"]) for a in df["arousal_mean_pred"]]
     df["va_mood"] = [
         config.FAILED_LABEL if config.FAILED_LABEL in (a, v) else f"{a} & {v}"
         for a, v in zip(df["arousal_label"], df["valence_label"])
@@ -107,16 +129,27 @@ def _donut(ax, counts: pd.Series, palette: dict[str, str], title: str) -> None:
     ax.set_title(title, color="white", fontsize=13, pad=12)
 
 
-def _draw_va_scatter(ax, df: pd.DataFrame) -> None:
+def _draw_va_scatter(ax, df: pd.DataFrame, th: dict[str, tuple[float, float]]) -> None:
     import matplotlib.lines as mlines
     import matplotlib.patches as mpatches
 
     ax.set_facecolor("#12122A")
+    # 축 범위: 절대 척도 예측은 0 근처에 모이므로 데이터·경계선이 다 보이는 만큼만 (최소 ±0.3, 최대 ±1.15)
+    pts = df[["valence_score", "arousal_score"]].abs().to_numpy().ravel()
+    bounds = [abs(to_signed(x)) for k in ("valence", "arousal") for x in th[k]]
+    vals = [v for v in [*pts, *bounds] if not _is_nan(v)]
+    lim = min(1.15, max(0.3, 1.25 * max(vals, default=1.0)))
+
     ax.axhline(0, color="#444466", linewidth=0.8, linestyle="--")
     ax.axvline(0, color="#444466", linewidth=0.8, linestyle="--")
+    # 형용사 경계선 (점선)
+    for v in th["valence"]:
+        ax.axvline(to_signed(v), color="#55557A", linewidth=0.7, linestyle=":")
+    for a in th["arousal"]:
+        ax.axhline(to_signed(a), color="#55557A", linewidth=0.7, linestyle=":")
     for (x0, y0, x1, y1, c) in [
-            (0, 0, 1.1, 1.1, "#1A2A1A"), (-1.1, 0, 0, 1.1, "#2A1A1A"),
-            (0, -1.1, 1.1, 0, "#1A1A2A"), (-1.1, -1.1, 0, 0, "#1E1A22")]:
+            (0, 0, lim, lim, "#1A2A1A"), (-lim, 0, 0, lim, "#2A1A1A"),
+            (0, -lim, lim, 0, "#1A1A2A"), (-lim, -lim, 0, 0, "#1E1A22")]:
         ax.fill([x0, x1, x1, x0], [y0, y0, y1, y1], color=c, alpha=0.5, zorder=0)
 
     for _, row in df.dropna(subset=["valence_score", "arousal_score"]).iterrows():  # 분석 실패 곡은 점 없음
@@ -126,30 +159,33 @@ def _draw_va_scatter(ax, df: pd.DataFrame) -> None:
         ax.annotate(row["title"], (row["valence_score"], row["arousal_score"]),
                     textcoords="offset points", xytext=(8, 5), fontsize=8, color="#CCCCEE")
 
-    ax.set_xlim(-1.15, 1.15)
-    ax.set_ylim(-1.15, 1.15)
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
     ax.set_xlabel("Valence  (우울한 ←————→ 밝은)", color="#AAAACC", fontsize=10)
     ax.set_ylabel("Arousal  (차분한 ←————→ 활기찬)", color="#AAAACC", fontsize=10)
-    ax.set_title("Valence – Arousal 분포\n(채움: Arousal / 테두리: 가사 색감 / 마커: Valence)",
+    ax.set_title("Valence – Arousal 분포\n(채움: Arousal / 테두리: 가사 색감 / 마커: Valence / 점선: 형용사 경계)",
                  color="white", fontsize=11, pad=10)
     ax.tick_params(colors="#666688")
     for spine in ax.spines.values():
         spine.set_edgecolor("#333355")
-    for (x, y, t) in [(0.55, 1.08, "활기찬 & 밝은"), (-1.1, 1.08, "활기찬 & 우울한"),
-                      (0.55, -1.12, "차분한 & 밝은"), (-1.1, -1.12, "차분한 & 우울한")]:
-        ax.text(x, y, t, fontsize=8, color="#666688")
+    for (x, y, t, ha, va) in [(0.98, 0.98, "활기찬 & 밝은", "right", "top"), (0.02, 0.98, "활기찬 & 우울한", "left", "top"),
+                              (0.98, 0.02, "차분한 & 밝은", "right", "bottom"), (0.02, 0.02, "차분한 & 우울한", "left", "bottom")]:
+        ax.text(x, y, t, fontsize=8, color="#666688", ha=ha, va=va, transform=ax.transAxes)
 
     legend_style = dict(fontsize=7, facecolor="#1A1A2E", edgecolor="#333355",
                         labelcolor="white", framealpha=0.85, title_fontsize=8)
     a_patches = [mpatches.Patch(color=c, label=m) for m, c in config.AROUSAL_COLORS.items()]
-    leg1 = ax.legend(handles=a_patches, title="Arousal", loc="lower right", **legend_style)
+    # 범례는 그래프 아래 바깥쪽 (아래 모서리의 '차분한 & ...' 라벨을 가리지 않게)
+    leg1 = ax.legend(handles=a_patches, title="Arousal", loc="upper right", bbox_to_anchor=(1.0, -0.13),
+                     ncol=3, **legend_style)
     leg1.get_title().set_color("white")
 
     v_handles = [mlines.Line2D([0], [0], marker=config.VALENCE_MARKERS[m], color="w",
                                markerfacecolor=config.VALENCE_COLORS[m], markersize=8,
                                label=f"{config.VALENCE_SYMBOLS[m]} {m}", linestyle="None")
                  for m in config.VALENCE_MARKERS]
-    leg2 = ax.legend(handles=v_handles, title="Valence", loc="lower left", **legend_style)
+    leg2 = ax.legend(handles=v_handles, title="Valence", loc="upper left", bbox_to_anchor=(0.0, -0.13),
+                     ncol=3, **legend_style)
     leg2.get_title().set_color("white")
     ax.add_artist(leg1)
 
@@ -222,7 +258,7 @@ def _draw_color_groups(ax, df: pd.DataFrame) -> None:
                     transform=ax.transAxes, va="top")
 
 
-def plot(df: pd.DataFrame, out_path) -> None:
+def plot(df: pd.DataFrame, out_path, th: dict[str, tuple[float, float]]) -> None:
     """분석 결과 대시보드 PNG 저장 (도넛 3개 + VA 산점도 + 그룹 목록 2개)."""
     import matplotlib
     matplotlib.use("Agg")
@@ -271,7 +307,7 @@ def plot(df: pd.DataFrame, out_path) -> None:
     _donut(ax_donut_a, df["arousal_label"].value_counts(), config.AROUSAL_COLORS, "Arousal 분위기 구성")
     _donut(ax_donut_v, df["valence_label"].value_counts(), config.VALENCE_COLORS, "Valence 감성 구성")
     _donut(ax_donut_c, df["main_color_text"].value_counts(), config.LYRICS_COLOR_MAP, "가사 감성 색감 구성")
-    _draw_va_scatter(ax_va, df)
+    _draw_va_scatter(ax_va, df, th)
     _draw_mood_groups(ax_songs, df, total)
     _draw_color_groups(ax_color_group, df)
 
@@ -284,5 +320,5 @@ def run(cfg: config.Config) -> pd.DataFrame:
     """final_result.csv와 playlist_analysis.png를 만든다."""
     df = build_final_table(cfg)
     write_csv(df, cfg.final_csv, log)
-    plot(df, cfg.figure_png)
+    plot(df, cfg.figure_png, get_thresholds(cfg))
     return df

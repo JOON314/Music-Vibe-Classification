@@ -96,8 +96,11 @@ def build_model(n_feat: int):
     return m
 
 
-def train(X: np.ndarray, Y: np.ndarray) -> list[FoldModel]:
-    """5-Fold 교차검증으로 Fold별 모델을 학습하고 검증 지표를 기록한다."""
+def train(X: np.ndarray, Y: np.ndarray) -> tuple[list[FoldModel], np.ndarray]:
+    """5-Fold 교차검증으로 Fold별 모델을 학습하고 검증 지표를 기록한다.
+
+    반환: (Fold 모델 목록, 각 곡을 학습에 쓰지 않은 Fold로 예측한 OOF 예측값)
+    """
     import tensorflow as tf
     from sklearn.metrics import mean_absolute_error, r2_score
     from sklearn.model_selection import KFold
@@ -105,6 +108,7 @@ def train(X: np.ndarray, Y: np.ndarray) -> list[FoldModel]:
 
     kf = KFold(n_splits=config.N_FOLDS, shuffle=True, random_state=config.SEED)
     folds: list[FoldModel] = []
+    oof = np.zeros_like(Y, dtype=float)
 
     for fold, (tr, va) in enumerate(kf.split(X), 1):
         sx, sy = StandardScaler(), StandardScaler()
@@ -123,6 +127,7 @@ def train(X: np.ndarray, Y: np.ndarray) -> list[FoldModel]:
 
         Y_va = Y[va]
         pred_va = sy.inverse_transform(model.predict(X_va_s, verbose=0))
+        oof[va] = pred_va
         fm = FoldModel(
             model=model, scaler_x=sx, scaler_y=sy,
             mae=float(mean_absolute_error(Y_va, pred_va)),
@@ -137,7 +142,16 @@ def train(X: np.ndarray, Y: np.ndarray) -> list[FoldModel]:
     log.info("[결과] MAE %.3f±%.3f", np.mean(maes), np.std(maes))
     log.info("[결과] R²(Valence) %.3f", np.mean([f.r2_valence for f in folds]))
     log.info("[결과] R²(Arousal) %.3f", np.mean([f.r2_arousal for f in folds]))
-    return folds
+    return folds, oof
+
+
+def calibrate_thresholds(oof: np.ndarray) -> dict[str, list[float]]:
+    """OOF 예측을 LABEL_QUANTILES로 나누는 값 → 형용사 임계값 (DEAM 척도)."""
+    q = list(config.LABEL_QUANTILES)
+    th = {name: [round(float(v), 4) for v in np.quantile(oof[:, i], q)]
+          for i, name in enumerate(("valence", "arousal"))}
+    log.info("보정 임계값 (DEAM 척도): Valence %s, Arousal %s", th["valence"], th["arousal"])
+    return th
 
 
 def predict(folds: list[FoldModel], features: np.ndarray) -> np.ndarray:
@@ -151,7 +165,8 @@ def predict(folds: list[FoldModel], features: np.ndarray) -> np.ndarray:
     return np.mean(preds, axis=0)
 
 
-def save_models(folds: list[FoldModel], cfg: config.Config) -> None:
+def save_models(folds: list[FoldModel], cfg: config.Config,
+                thresholds: dict[str, list[float]]) -> None:
     """Fold 모델(.keras)·스케일러(joblib)·학습 메타데이터(json)를 models/에 저장한다."""
     import joblib
     import tensorflow as tf
@@ -166,11 +181,20 @@ def save_models(folds: list[FoldModel], cfg: config.Config) -> None:
         "seed": config.SEED,
         "n_folds": len(folds),
         "feat_cols": config.FEAT_COLS,
+        "label_thresholds": thresholds,
+        "label_quantiles": list(config.LABEL_QUANTILES),
         "folds": [{"fold": k, "mae": f.mae, "r2_valence": f.r2_valence, "r2_arousal": f.r2_arousal}
                   for k, f in enumerate(folds, 1)],
     }
     cfg.model_meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
     log.info("모델 저장: %s", cfg.models_dir)
+
+
+def load_label_thresholds(cfg: config.Config) -> dict[str, list[float]] | None:
+    """저장된 보정 임계값 (없으면 None)."""
+    if not cfg.model_meta_path.exists():
+        return None
+    return json.loads(cfg.model_meta_path.read_text(encoding="utf-8")).get("label_thresholds")
 
 
 def has_saved_models(cfg: config.Config) -> bool:
@@ -229,8 +253,8 @@ def run(cfg: config.Config) -> pd.DataFrame:
     if cfg.retrain or not has_saved_models(cfg):
         set_seeds()
         X, Y = load_training_data(cfg)
-        folds = train(X, Y)
-        save_models(folds, cfg)
+        folds, oof = train(X, Y)
+        save_models(folds, cfg, calibrate_thresholds(oof))
     else:
         folds = load_models(cfg)
     ens = predict(folds, test_features)

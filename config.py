@@ -287,9 +287,16 @@ EMOTION_COMBO_TOP_N = 3
 # ─────────────────────────────────────────────
 # 6단계: 형용사 + 시각화
 # ─────────────────────────────────────────────
-VA_CENTER = 5             # (x - 5) / 5 로 -1~1 변환
+VA_CENTER = 5             # (x - 5) / 5 로 -1~1 변환 (그래프 좌표)
 VA_HALF_RANGE = 5
-LABEL_THRESHOLD = 0.2
+# 형용사 임계값
+#   "calibrated" (기본): 학습 시 DEAM 검증(OOF) 예측을 3등분하는 값 (models/train_meta.json에 저장).
+#       모델 예측이 평균 쪽으로 압축되어(R² 0.4 수준) 원래 ±0.2(=4~6) 기준으로는 DEAM에서도 70%가
+#       '포근한'이 됐음 → 모델 출력 분포에 맞춘 고정 임계값. 플레이리스트와 무관한 절대 기준.
+#   "fixed": 원본 규칙, (x-5)/5 > +0.2 / > -0.2
+LABEL_THRESHOLD_MODE = "calibrated"
+LABEL_QUANTILES = (1 / 3, 2 / 3)
+LABEL_THRESHOLD = 0.2     # fixed 모드
 
 FAILED_LABEL = "분석 실패"   # 예측값(음원) 또는 가사 색이 없는 곡
 FAILED_COLOR = "#555566"

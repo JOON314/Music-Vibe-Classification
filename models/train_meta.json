@@ -1,5 +1,5 @@
 {
-  "created": "2026-10-07T12:14:15",
+  "created": "2026-10-07T13:00:57",
   "tensorflow": "2.16.2",
   "seed": 42,
   "n_folds": 5,
@@ -28,6 +28,20 @@
     "pcm_fftMag_psySharpness_sma_amean",
     "pcm_fftMag_mfcc_sma[1]_amean",
     "pcm_fftMag_mfcc_sma[4]_amean"
+  ],
+  "label_thresholds": {
+    "valence": [
+      4.5598,
+      5.3355
+    ],
+    "arousal": [
+      4.4018,
+      5.3507
+    ]
+  },
+  "label_quantiles": [
+    0.3333333333333333,
+    0.6666666666666666
   ],
   "folds": [
     {
