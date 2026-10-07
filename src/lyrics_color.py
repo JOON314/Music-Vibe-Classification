@@ -105,15 +105,25 @@ def match_keywords(core_df: pd.DataFrame, lexicon_df: pd.DataFrame) -> pd.DataFr
     return matched
 
 
-def _secondary_emotion(row: pd.Series) -> str:
-    return row[EMO].sort_values(ascending=False).index[1]
+def rank_emotions(scores: dict[str, float], sentiment_ratio: float) -> list[str]:
+    """8감정을 점수 내림차순으로 정렬. 동점이면 긍부정 비율에 맞는 감정 그룹을 먼저.
 
+    원본은 idxmax(동점 시 목록 첫 번째 = joy)와 불안정 정렬을 써서 동점 곡이 joy로 쏠렸다
+    (동점 3곡 중 2곡이 노란색).
+    """
+    def group_rank(e: str) -> int:
+        if sentiment_ratio > 0:
+            order = (config.POSITIVE_EMOTIONS, (), config.NEGATIVE_EMOTIONS)
+        elif sentiment_ratio < 0:
+            order = (config.NEGATIVE_EMOTIONS, (), config.POSITIVE_EMOTIONS)
+        else:
+            return 0
+        for rank, group in enumerate(order):
+            if e in group:
+                return rank
+        return 1  # 중립(surprise)
 
-def _emotion_combo(row: pd.Series, top_n: int = config.EMOTION_COMBO_TOP_N) -> str:
-    if row["emotion_total"] == 0:
-        return "unmatched"
-    top = row[EMO].sort_values(ascending=False).index[:top_n]
-    return "+".join(e for e in top if row[e] > 0)
+    return sorted(EMO, key=lambda e: (-scores[e], group_rank(e), EMO.index(e)))
 
 
 def score_songs(matched_df: pd.DataFrame) -> pd.DataFrame:
@@ -135,8 +145,10 @@ def score_songs(matched_df: pd.DataFrame) -> pd.DataFrame:
         .fillna(0)
     )
 
-    songs["primary_emotion"] = songs[EMO].idxmax(axis=1)
-    songs["secondary_emotion"] = songs.apply(_secondary_emotion, axis=1)
+    ranked = [rank_emotions({e: row[e] for e in EMO}, row["sentiment_ratio"])
+              for _, row in songs.iterrows()]
+    songs["primary_emotion"] = [r[0] for r in ranked]
+    songs["secondary_emotion"] = [r[1] for r in ranked]
 
     zero = songs["emotion_total"] == 0
     songs.loc[zero, ["primary_emotion", "secondary_emotion"]] = "unmatched"
@@ -145,7 +157,11 @@ def score_songs(matched_df: pd.DataFrame) -> pd.DataFrame:
         songs[f"{emotion}_ratio"] = songs[emotion] / songs["emotion_total"]
     songs = songs.fillna(0)
 
-    songs["emotion_combo"] = songs.apply(_emotion_combo, axis=1)
+    n = config.EMOTION_COMBO_TOP_N
+    songs["emotion_combo"] = [
+        "unmatched" if total == 0 else "+".join(e for e in r[:n] if row[e] > 0)
+        for r, total, (_, row) in zip(ranked, songs["emotion_total"], songs.iterrows())
+    ]
     return songs
 
 
@@ -161,15 +177,14 @@ def hsv_to_hex(h: float, s: float, v: float) -> str:
 
 def adjust_hsv_by_sentiment(base_hsv: tuple[float, float, float],
                             sentiment_ratio: float) -> tuple[float, float, float]:
-    """긍부정 비율로 V(명도)를 조정한다.
+    """긍부정 비율(-1~1)로 감정 기본색의 V(명도)를 ±0.10 범위에서 조정한다.
 
-    원본 동작 유지: 마지막 줄에서 V가 sentiment_ratio 자체로 덮어써진다(Phase 2 문제 E).
+    원본은 마지막 줄에서 V를 sentiment_ratio 자체로 덮어써서 V가 음수가 되면 '#-F-37-FF' 같은
+    잘못된 HEX가 나왔고, 감정 없는 곡(V 0.6 회색)은 검정(#000000)이 됐다.
     """
     h, s, v = base_hsv
     ratio = _clamp(sentiment_ratio, -1, 1)
-    v = v + (config.SENTIMENT_VALUE_ADJUST * ratio)
-    v = _clamp(sentiment_ratio, -1, 1)
-    return h, s, v
+    return h, s, _clamp(v + config.SENTIMENT_VALUE_ADJUST * ratio, 0, 1)
 
 
 def emotion_to_hex(emotion: str, sentiment_ratio: float) -> str:

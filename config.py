@@ -252,7 +252,12 @@ EMOTION_COLOR_NAME_MAP: dict[str, str] = {
     "unmatched": "회색",
 }
 
-SENTIMENT_VALUE_ADJUST = 0.10   # 감정 비율에 따른 V 보정 폭
+SENTIMENT_VALUE_ADJUST = 0.10   # 긍부정 비율(-1~1)에 따른 V(명도) 보정 폭: V + 0.10 × ratio
+
+# 감정 점수가 동점일 때: 곡의 긍부정 비율이 양수면 긍정 감정, 음수면 부정 감정을 먼저 고른다
+# (0이거나 같은 그룹 안에서는 EMOTION_COLS 순서). surprise는 중립.
+POSITIVE_EMOTIONS = ("joy", "trust", "anticipation")
+NEGATIVE_EMOTIONS = ("sadness", "anger", "fear", "disgust")
 SENTIMENT_LABEL_THRESHOLD = 0.35
 EMOTION_COMBO_TOP_N = 3
 
