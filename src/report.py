@@ -80,7 +80,8 @@ def arousal_label(a: float, low: float, high: float) -> str:
 def build_final_table(cfg: config.Config) -> pd.DataFrame:
     """가사·예측·색을 song_id 기준 left join하고 형용사 컬럼을 추가한다."""
     if cfg.lyrics_csv.exists():
-        base = read_csv(cfg.lyrics_csv)
+        # 가사 원문은 01_lyrics.csv에만 두고 최종 결과에는 넣지 않음 (저작권, 파일 크기)
+        base = read_csv(cfg.lyrics_csv).drop(columns=["lyrics", "lyrics_error"], errors="ignore")
     else:
         log.warning("%s 없음 → 플레이리스트만으로 진행", cfg.lyrics_csv)
         base = load_playlist(cfg.input_csv)

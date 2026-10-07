@@ -6,3 +6,9 @@ outputs/cache/
 *.wav
 *.webm
 *.m4a
+
+# 가사 원문(저작권) — 로컬에서만 사용
+outputs/01_lyrics.csv
+**/01_lyrics.csv
+_baseline/dataset/Playlists_lyrics_mood.csv
+_baseline/dataset/audio_va_result.csv
