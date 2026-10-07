@@ -5,6 +5,8 @@
 """
 from __future__ import annotations
 
+import math
+
 import pandas as pd
 
 import config
@@ -18,17 +20,25 @@ BG = "#0D0D1A"
 # ─────────────────────────────────────────────
 # 형용사 부여
 # ─────────────────────────────────────────────
+def _is_nan(x: float) -> bool:
+    return x is None or (isinstance(x, float) and math.isnan(x))
+
+
 def _clamp(x: float, low: float = -1.0, high: float = 1.0) -> float:
-    # 원본 동작 유지: x가 NaN이면 min(high, nan) == high 이므로 +1이 된다(Phase 2 문제 A).
+    # NaN은 그대로 NaN (원본은 min(high, nan) == high 가 되어 예측값 없는 곡이 +1 '활기찬 & 밝은'이 됐음)
+    if _is_nan(x):
+        return float("nan")
     return max(low, min(high, x))
 
 
 def to_signed(x: float) -> float:
-    """DEAM 척도 값 → -1~1 ((x-5)/5)."""
+    """DEAM 척도 값 → -1~1 ((x-5)/5). 값이 없으면 NaN."""
     return _clamp((x - config.VA_CENTER) / config.VA_HALF_RANGE)
 
 
 def _three_level(score: float, labels: tuple[str, str, str]) -> str:
+    if _is_nan(score):
+        return config.FAILED_LABEL
     t = config.LABEL_THRESHOLD
     if score > t:
         return labels[0]
@@ -69,7 +79,15 @@ def build_final_table(cfg: config.Config) -> pd.DataFrame:
     df["arousal_score"] = df["arousal_mean_pred"].apply(to_signed)
     df["valence_label"] = df["valence_score"].apply(valence_label)
     df["arousal_label"] = df["arousal_score"].apply(arousal_label)
-    df["va_mood"] = df["arousal_label"] + " & " + df["valence_label"]  # 색깔과 분리된 VA 분위기
+    df["va_mood"] = [
+        config.FAILED_LABEL if config.FAILED_LABEL in (a, v) else f"{a} & {v}"
+        for a, v in zip(df["arousal_label"], df["valence_label"])
+    ]  # 색깔과 분리된 VA 분위기
+    df["main_color_text"] = df["main_color_text"].fillna(config.FAILED_LABEL)
+
+    failed = df[df["va_mood"] == config.FAILED_LABEL]["title"].tolist()
+    if failed:
+        log.warning("음원 분석 실패로 형용사를 붙이지 못한 곡: %s", ", ".join(map(str, failed)))
     return df
 
 
@@ -77,6 +95,7 @@ def build_final_table(cfg: config.Config) -> pd.DataFrame:
 # 시각화
 # ─────────────────────────────────────────────
 def _donut(ax, counts: pd.Series, palette: dict[str, str], title: str) -> None:
+    palette = {**palette, config.FAILED_LABEL: config.FAILED_COLOR}
     colors = [palette.get(m, "#888888") for m in counts.index]
     _, _, autotexts = ax.pie(
         counts.values, labels=counts.index, autopct="%1.1f%%", colors=colors, startangle=90,
@@ -100,7 +119,7 @@ def _draw_va_scatter(ax, df: pd.DataFrame) -> None:
             (0, -1.1, 1.1, 0, "#1A1A2A"), (-1.1, -1.1, 0, 0, "#1E1A22")]:
         ax.fill([x0, x1, x1, x0], [y0, y0, y1, y1], color=c, alpha=0.5, zorder=0)
 
-    for _, row in df.iterrows():
+    for _, row in df.dropna(subset=["valence_score", "arousal_score"]).iterrows():  # 분석 실패 곡은 점 없음
         ax.scatter(row["valence_score"], row["arousal_score"],
                    color=row["color"], s=160, zorder=3, marker=row["marker"],
                    edgecolors=row["lyrics_color"], linewidths=2.5)
@@ -172,8 +191,9 @@ def _draw_mood_groups(ax, df: pd.DataFrame, total: int) -> None:
             lc = config.LYRICS_COLOR_MAP.get(row["main_color_text"], "#CCCCCC")
             ax.text(cx, y_pos, f"♪ {row['title']}", fontsize=8.5, color="#DDDDEE",
                     transform=ax.transAxes, va="top")
-            ax.text(cx, y_pos - lh,
-                    f"  V:{row['valence_score']:+.2f} A:{row['arousal_score']:+.2f}",
+            va_text = ("  음원 분석 실패" if _is_nan(row["valence_score"])
+                       else f"  V:{row['valence_score']:+.2f} A:{row['arousal_score']:+.2f}")
+            ax.text(cx, y_pos - lh, va_text,
                     fontsize=7.5, color="#7777AA", transform=ax.transAxes, va="top")
             ax.text(cx, y_pos - 2 * lh, f"  {COLOR_MARK} {row['main_color_text']}",
                     fontsize=7.5, color=lc, transform=ax.transAxes, va="top")

@@ -262,6 +262,8 @@ VA_CENTER = 5             # (x - 5) / 5 로 -1~1 변환
 VA_HALF_RANGE = 5
 LABEL_THRESHOLD = 0.2
 
+FAILED_LABEL = "분석 실패"   # 예측값(음원) 또는 가사 색이 없는 곡
+FAILED_COLOR = "#555566"
 VALENCE_LABELS = ("밝은", "담담한", "우울한")    # > +0.2 / > -0.2 / 나머지
 AROUSAL_LABELS = ("활기찬", "포근한", "차분한")
 

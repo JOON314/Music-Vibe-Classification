@@ -1,0 +1,64 @@
+{
+  "created": "2026-10-07T11:57:13",
+  "tensorflow": "2.16.2",
+  "seed": 42,
+  "n_folds": 5,
+  "feat_cols": [
+    "F0final_sma_amean",
+    "voicingFinalUnclipped_sma_amean",
+    "jitterLocal_sma_amean",
+    "shimmerLocal_sma_amean",
+    "logHNR_sma_amean",
+    "audspec_lengthL1norm_sma_amean",
+    "pcm_RMSenergy_sma_amean",
+    "pcm_zcr_sma_amean",
+    "pcm_fftMag_fband250-650_sma_amean",
+    "pcm_fftMag_fband1000-4000_sma_amean",
+    "pcm_fftMag_spectralRollOff25.0_sma_amean",
+    "pcm_fftMag_spectralRollOff50.0_sma_amean",
+    "pcm_fftMag_spectralRollOff75.0_sma_amean",
+    "pcm_fftMag_spectralRollOff90.0_sma_amean",
+    "pcm_fftMag_spectralFlux_sma_amean",
+    "pcm_fftMag_spectralCentroid_sma_amean",
+    "pcm_fftMag_spectralEntropy_sma_amean",
+    "pcm_fftMag_spectralVariance_sma_amean",
+    "pcm_fftMag_spectralSkewness_sma_amean",
+    "pcm_fftMag_spectralKurtosis_sma_amean",
+    "pcm_fftMag_spectralSlope_sma_amean",
+    "pcm_fftMag_psySharpness_sma_amean",
+    "pcm_fftMag_mfcc_sma[1]_amean",
+    "pcm_fftMag_mfcc_sma[4]_amean"
+  ],
+  "folds": [
+    {
+      "fold": 1,
+      "mae": 0.7516000270843506,
+      "r2_valence": 0.2875592112541199,
+      "r2_arousal": 0.3752790093421936
+    },
+    {
+      "fold": 2,
+      "mae": 0.7717168927192688,
+      "r2_valence": 0.3441833257675171,
+      "r2_arousal": 0.43789565563201904
+    },
+    {
+      "fold": 3,
+      "mae": 0.7556477785110474,
+      "r2_valence": 0.36633968353271484,
+      "r2_arousal": 0.39058858156204224
+    },
+    {
+      "fold": 4,
+      "mae": 0.7578135132789612,
+      "r2_valence": 0.41917866468429565,
+      "r2_arousal": 0.43639075756073
+    },
+    {
+      "fold": 5,
+      "mae": 0.6990209817886353,
+      "r2_valence": 0.46035557985305786,
+      "r2_arousal": 0.49989068508148193
+    }
+  ]
+}
