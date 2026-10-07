@@ -1,6 +1,6 @@
 # Python 3.11, macOS Apple Silicon에서 검증한 버전
 # 설치 후: python -m spacy download en_core_web_sm
-# 외부 프로그램: Google Chrome(1단계), ffmpeg(2단계, brew install ffmpeg)
+# 외부 프로그램: Google Chrome(1단계), ffmpeg·deno(2단계, brew install ffmpeg deno)
 
 # 공통
 numpy==1.26.4
@@ -11,8 +11,11 @@ tqdm==4.70.1
 selenium==4.50.0
 
 # 2단계: 음원 다운로드 + 오디오 피처
-yt-dlp==2026.8.19
-librosa==0.11.0
+# yt-dlp는 유튜브 다운로드에 JS 런타임(deno)이 필요 — 없으면 HTTP 403
+yt-dlp[default]==2026.8.19
+yt-dlp-ejs==0.8.0
+opensmile==2.6.0            # 기본 추출기 (DEAM과 같은 openSMILE ComParE_2016)
+librosa==0.11.0             # AUDIO_EXTRACTOR="librosa"(원본 근사 방식)일 때
 praat-parselmouth==0.4.7
 
 # 3단계: 딥러닝

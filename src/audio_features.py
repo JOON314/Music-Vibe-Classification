@@ -1,4 +1,4 @@
-"""2단계: 유튜브에서 음원을 받아 openSMILE 근사 오디오 피처 24개를 추출한다.
+"""2단계: 유튜브에서 음원을 받아 오디오 피처 24개(DEAM 학습 피처와 같은 이름)를 추출한다.
 
 입력: input/Playlist.csv
 출력: outputs/02_audio_features.csv (song_id, title, artist, FEAT_COLS...)
@@ -6,13 +6,18 @@
 캐시: outputs/cache/audio_features_cache.csv — 이미 피처를 뽑은 (title, artist)는 다시 받지 않음
      (피처 계산 코드를 바꿨다면 --no-cache로 새로 뽑을 것)
 
-학습 데이터(DEAM)는 openSMILE 피처, 여기서는 librosa/parselmouth로 같은 이름의 값을 근사한다.
+추출기(config.AUDIO_EXTRACTOR)
+  - opensmile (기본): DEAM과 같은 openSMILE ComParE_2016 LLD의 곡 전체 평균
+  - librosa: 원본 프로젝트의 근사 구현. DEAM과 스케일이 수백~수천 σ 달라(docs/phase2_분석.md) 비교용
 """
 from __future__ import annotations
 
+import os
+import shutil
 import tempfile
 import warnings
 from contextlib import nullcontext
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -52,8 +57,56 @@ def _nanmean(x) -> float:
     return float(x.mean()) if len(x) else 0.0
 
 
+@lru_cache(maxsize=1)
+def _opensmile_extractor():
+    """openSMILE ComParE_2016 LLD 추출기 (한 번만 생성).
+
+    opensmile 패키지는 설정 파일 경로를 ASCII로만 C 라이브러리에 넘겨서, 프로젝트 경로에
+    한글('캡스톤')이 있으면 UnicodeEncodeError가 난다 → 설정 폴더를 ASCII 임시 경로로 복사해 사용.
+    """
+    import opensmile
+
+    src = os.path.join(os.path.dirname(opensmile.__file__), "core", "config")
+    dst = os.path.join(tempfile.gettempdir(), f"opensmile_config_{opensmile.__version__}")
+    if not os.path.isdir(dst):
+        shutil.copytree(src, dst)
+    if not dst.isascii():
+        raise RuntimeError(f"openSMILE 설정 경로에 ASCII가 아닌 문자가 있습니다: {dst} (TMPDIR을 영문 경로로 설정하세요)")
+
+    class _Smile(opensmile.Smile):
+        @property
+        def default_config_root(self) -> str:
+            return dst
+
+    return _Smile(feature_set=opensmile.FeatureSet.ComParE_2016,
+                  feature_level=opensmile.FeatureLevel.LowLevelDescriptors)
+
+
+def extract_features_opensmile(wav_path: Path) -> dict[str, float]:
+    """openSMILE ComParE_2016 LLD를 곡 전체 프레임 평균 → FEAT_COLS 24개.
+
+    DEAM 피처(output.csv)도 openSMILE 프레임 값을 곡별로 평균한 것(참고자료/Data process.py)이라 같은 방식.
+    """
+    lld = _opensmile_extractor().process_file(str(wav_path))
+    feats = {}
+    for col in config.FEAT_COLS:
+        name = col.removesuffix("_amean")
+        name = config.OPENSMILE_RENAME.get(name, name)
+        feats[col] = float(np.nanmean(lld[name].to_numpy(dtype=float)))
+    return feats
+
+
 def extract_features(wav_path: Path) -> dict[str, float]:
-    """wav 한 곡에서 FEAT_COLS 24개 값을 계산한다(곡 전체 프레임 평균)."""
+    """config.AUDIO_EXTRACTOR에 따라 피처 24개를 추출한다."""
+    if config.AUDIO_EXTRACTOR == "opensmile":
+        return extract_features_opensmile(wav_path)
+    if config.AUDIO_EXTRACTOR == "librosa":
+        return extract_features_librosa(wav_path)
+    raise ValueError(f"알 수 없는 AUDIO_EXTRACTOR: {config.AUDIO_EXTRACTOR}")
+
+
+def extract_features_librosa(wav_path: Path) -> dict[str, float]:
+    """(원본 방식) librosa/parselmouth로 openSMILE 피처를 근사한다(곡 전체 프레임 평균)."""
     import librosa
     import parselmouth
     from parselmouth.praat import call

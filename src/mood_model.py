@@ -200,8 +200,16 @@ def load_models(cfg: config.Config) -> list[FoldModel]:
     return folds
 
 
+def _warn_out_of_range(ens: np.ndarray) -> None:
+    """예측값이 DEAM 라벨 범위(1~9)를 크게 벗어나면 도메인 시프트 가능성을 경고한다."""
+    out = (ens < 0) | (ens > 10)
+    if out.any():
+        log.warning("예측값 %d개가 DEAM 척도(1~9)를 크게 벗어났습니다 (min %.1f, max %.1f). "
+                    "피처 추출기와 학습 피처가 맞는지 확인하세요.", out.sum(), ens.min(), ens.max())
+
+
 def scale_to_10(pred_col: np.ndarray) -> np.ndarray:
-    """플레이리스트 안에서 min-max로 0~10 재조정한다(원본 동작, Phase 2 검토 대상)."""
+    """플레이리스트 안에서 min-max로 0~10 재조정한다 (config.PRED_SCALING="minmax"일 때, 원본 방식)."""
     p_min, p_max = pred_col.min(), pred_col.max()
     scaled = (pred_col - p_min) / (p_max - p_min + 1e-10) * config.SCALE_MAX
     return np.clip(scaled, 0, config.SCALE_MAX)
@@ -229,7 +237,9 @@ def run(cfg: config.Config) -> pd.DataFrame:
 
     result = df_test[ID_COLS].copy()
     for i, col in enumerate(config.PRED_COLS):
-        result[col] = scale_to_10(ens[:, i]).round(config.PRED_ROUND)
+        values = scale_to_10(ens[:, i]) if config.PRED_SCALING == "minmax" else ens[:, i]
+        result[col] = np.round(values, config.PRED_ROUND)
+    _warn_out_of_range(ens)
 
     log.info("예측 결과 (앙상블)\n%s", result.to_string(index=False))
     write_csv(result, cfg.va_predictions_csv, log)

@@ -3,12 +3,12 @@
 플레이리스트(곡명·아티스트)를 넣으면 두 갈래로 분석해 한 장의 결과 이미지로 보여줍니다.
 
 - **가사 → 색**: 멜론 가사 크롤링 → 핵심 키워드 → NRC 8감정 → 9가지 색(노랑·파랑·빨강·보라·초록·갈색·주황·분홍·회색)
-- **음원 → 분위기 형용사**: 유튜브 음원 → 오디오 피처 24개 → DEAM으로 학습한 딥러닝이 Valence/Arousal 예측 → 형용사(밝은/담담한/우울한 × 활기찬/포근한/차분한)
+- **음원 → 분위기 형용사**: 유튜브 음원 → openSMILE 오디오 피처 24개 → DEAM으로 학습한 딥러닝이 Valence/Arousal 예측 → 형용사(밝은/담담한/우울한 × 활기찬/포근한/차분한)
 
 ## 1. 설치 (macOS, Apple Silicon 기준)
 
 ```bash
-brew install python@3.11 ffmpeg          # ffmpeg: 유튜브 음원 → wav 변환에 필요
+brew install python@3.11 ffmpeg deno     # ffmpeg: 음원 → wav 변환, deno: yt-dlp 유튜브 다운로드에 필요
 # Google Chrome 설치 필요 (멜론 크롤링, 드라이버는 Selenium이 자동으로 받음)
 
 cd Final
@@ -52,7 +52,7 @@ python -m spacy download en_core_web_sm
 
 | 컬럼 | 의미 |
 |---|---|
-| `valence_mean_pred`, `arousal_mean_pred` | 예측값을 **이 플레이리스트 안에서** 0~10으로 min-max 재조정한 값 |
+| `valence_mean_pred`, `arousal_mean_pred` | 모델 예측값 (DEAM 척도 1~9, 5가 중간). `config.PRED_SCALING="minmax"`이면 원본처럼 플레이리스트 안에서 0~10 재조정 |
 | `valence_score`, `arousal_score` | `(x − 5) / 5`, −1~1로 자름 |
 | `valence_label` | > 0.2 밝은 / > −0.2 담담한 / 나머지 우울한 |
 | `arousal_label` | > 0.2 활기찬 / > −0.2 포근한 / 나머지 차분한 |

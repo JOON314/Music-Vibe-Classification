@@ -91,7 +91,8 @@ class Config:
 
     @property
     def audio_cache_csv(self) -> Path:
-        return self.cache_dir / "audio_features_cache.csv"
+        # 추출기별로 따로 저장 (librosa 값과 openSMILE 값이 섞이지 않게)
+        return self.cache_dir / f"audio_features_cache_{AUDIO_EXTRACTOR}.csv"
 
     @property
     def final_csv(self) -> Path:             # 6단계
@@ -166,7 +167,14 @@ FEAT_COLS: list[str] = [
     "pcm_fftMag_mfcc_sma[4]_amean",
 ]
 
-# librosa/parselmouth 추출 파라미터 (openSMILE 근사)
+# 오디오 피처 추출기
+#   "opensmile": 실제 openSMILE ComParE_2016 LLD의 곡 평균 — DEAM 학습 피처와 같은 도구 (기본)
+#   "librosa"  : 원본 프로젝트의 librosa/parselmouth 근사 — DEAM과 스케일이 크게 달라(도메인 시프트) 비교용으로만 유지
+AUDIO_EXTRACTOR = "opensmile"
+# openSMILE ComParE_2016 LLD 이름 ↔ DEAM 피처 이름(_amean 제거, MFCC는 'pcm_fftMag_' 접두어 없음)
+OPENSMILE_RENAME = {"pcm_fftMag_mfcc_sma[1]": "mfcc_sma[1]", "pcm_fftMag_mfcc_sma[4]": "mfcc_sma[4]"}
+
+# librosa/parselmouth 추출 파라미터 (openSMILE 근사, AUDIO_EXTRACTOR="librosa"일 때)
 AUDIO_SR = 16000
 AUDIO_HOP = 160
 AUDIO_WIN = 400
@@ -191,7 +199,11 @@ DROPOUTS = (0.2, 0.15)
 EARLY_STOP_PATIENCE = 25
 LR_PLATEAU_PATIENCE = 10
 LR_PLATEAU_FACTOR = 0.5
-SCALE_MAX = 10          # scale_to_10: 플레이리스트 내 min-max → 0~10
+# 예측값 척도
+#   "deam"  : 모델 출력(DEAM 1~9 척도) 그대로 — 같은 곡은 항상 같은 결과 (기본, openSMILE 피처 전제)
+#   "minmax": 원본 scale_to_10 — 플레이리스트 안에서 min-max로 0~10 재조정(상대 순위)
+PRED_SCALING = "deam"
+SCALE_MAX = 10          # minmax일 때 최댓값
 PRED_ROUND = 4
 
 
