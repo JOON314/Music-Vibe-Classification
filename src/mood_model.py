@@ -36,11 +36,23 @@ class FoldModel:
 
 
 def set_seeds(seed: int = config.SEED) -> None:
-    """TensorFlow·NumPy 난수 시드 고정."""
+    """학습을 재현 가능하게 고정한다.
+
+    원본의 tf.random.set_seed + np.random.seed만으로는 Keras 3 내부 난수(가중치 초기화 외
+    셔플·드롭아웃 등)가 고정되지 않아 같은 코드도 실행마다 결과가 달랐다.
+    keras.utils.set_random_seed(파이썬·NumPy·TF·Keras 전부) + 결정적 연산 + 단일 스레드로 고정한다.
+    """
+    import keras
     import tensorflow as tf
 
-    tf.random.set_seed(seed)
-    np.random.seed(seed)
+    keras.utils.set_random_seed(seed)
+    try:
+        tf.config.experimental.enable_op_determinism()
+        tf.config.threading.set_intra_op_parallelism_threads(1)
+        tf.config.threading.set_inter_op_parallelism_threads(1)
+    except RuntimeError:
+        # 이미 TF 런타임이 초기화된 뒤(같은 프로세스에서 두 번째 학습)에는 스레드 설정 변경 불가 → 그대로 진행
+        log.debug("TF 스레드 설정은 이미 초기화되어 변경하지 않음")
 
 
 def load_training_data(cfg: config.Config) -> tuple[np.ndarray, np.ndarray]:
