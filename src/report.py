@@ -135,29 +135,47 @@ def _draw_va_scatter(ax, df: pd.DataFrame) -> None:
     ax.add_artist(leg1)
 
 
+LINE_IN = 0.19          # 그룹 목록 텍스트 한 줄 높이(인치)
+MOOD_BLOCK_LINES = 3.4  # 분위기 그룹: 곡당 제목·VA·색 3줄 + 여백
+COLOR_BLOCK_LINES = 2.4  # 색 그룹: 곡당 제목·분위기 2줄 + 여백
+HEADER_LINES = 2.6
+COLOR_MARK = "■"        # 🎨 이모지는 한글 폰트에 없어 □로 깨졌음
+
+
+def _group_row_height(max_items: int, block_lines: float) -> float:
+    """그룹 목록 행 높이(인치): 가장 큰 그룹이 겹치지 않고 들어갈 만큼."""
+    return (HEADER_LINES + max_items * block_lines + 0.5) * LINE_IN
+
+
+def _line_height(ax) -> float:
+    """axes 좌표계에서 텍스트 한 줄 높이."""
+    return LINE_IN / (ax.get_position().height * ax.figure.get_figheight())
+
+
 def _draw_mood_groups(ax, df: pd.DataFrame, total: int) -> None:
     ax.axis("off")
     ax.set_facecolor(BG)
     ax.set_title("비슷한 분위기끼리 모아봤어요!", color="white", fontsize=13, pad=10)
 
+    lh = _line_height(ax)
     grouped = df.groupby("va_mood")
     col_width = 1.0 / len(grouped)
     for i, (mood, group) in enumerate(grouped):
         cx = col_width * i + 0.01
         color = config.AROUSAL_COLORS.get(mood.split(" & ")[0], "#888888")
-        ax.text(cx, 0.95, mood, fontsize=9.5, fontweight="bold",
+        ax.text(cx, 1.0, mood, fontsize=9.5, fontweight="bold",
                 color=color, transform=ax.transAxes, va="top")
-        ax.text(cx, 0.80, f"{len(group)}곡 ({len(group) / total * 100:.0f}%)",
+        ax.text(cx, 1.0 - lh * 1.2, f"{len(group)}곡 ({len(group) / total * 100:.0f}%)",
                 fontsize=8, color="#AAAACC", transform=ax.transAxes, va="top")
         for j, (_, row) in enumerate(group.iterrows()):
-            y_pos = 0.64 - j * 0.20
+            y_pos = 1.0 - lh * (HEADER_LINES + j * MOOD_BLOCK_LINES)
             lc = config.LYRICS_COLOR_MAP.get(row["main_color_text"], "#CCCCCC")
             ax.text(cx, y_pos, f"♪ {row['title']}", fontsize=8.5, color="#DDDDEE",
                     transform=ax.transAxes, va="top")
-            ax.text(cx, y_pos - 0.11,
+            ax.text(cx, y_pos - lh,
                     f"  V:{row['valence_score']:+.2f} A:{row['arousal_score']:+.2f}",
                     fontsize=7.5, color="#7777AA", transform=ax.transAxes, va="top")
-            ax.text(cx, y_pos - 0.20, f"  🎨 {row['main_color_text']}",
+            ax.text(cx, y_pos - 2 * lh, f"  {COLOR_MARK} {row['main_color_text']}",
                     fontsize=7.5, color=lc, transform=ax.transAxes, va="top")
 
 
@@ -166,20 +184,21 @@ def _draw_color_groups(ax, df: pd.DataFrame) -> None:
     ax.set_facecolor(BG)
     ax.set_title("가사 색감으로 모아봤어요!", color="white", fontsize=13, pad=10)
 
+    lh = _line_height(ax)
     grouped = df.groupby("main_color_text")
     col_width = 1.0 / len(grouped)
     for i, (color_label, group) in enumerate(grouped):
         cx = col_width * i + 0.01
         lc = config.LYRICS_COLOR_MAP.get(color_label, "#CCCCCC")
-        ax.text(cx, 0.95, f"🎨 {color_label}", fontsize=9.5, fontweight="bold",
+        ax.text(cx, 1.0, f"{COLOR_MARK} {color_label}", fontsize=9.5, fontweight="bold",
                 color=lc, transform=ax.transAxes, va="top")
-        ax.text(cx, 0.80, f"{len(group)}곡", fontsize=8, color="#AAAACC",
+        ax.text(cx, 1.0 - lh * 1.2, f"{len(group)}곡", fontsize=8, color="#AAAACC",
                 transform=ax.transAxes, va="top")
         for j, (_, row) in enumerate(group.iterrows()):
-            y_pos = 0.64 - j * 0.18
+            y_pos = 1.0 - lh * (HEADER_LINES + j * COLOR_BLOCK_LINES)
             ax.text(cx, y_pos, f"♪ {row['title']}", fontsize=8.5, color="#DDDDEE",
                     transform=ax.transAxes, va="top")
-            ax.text(cx, y_pos - 0.10, f"  {row['va_mood']}", fontsize=7.5, color="#7777AA",
+            ax.text(cx, y_pos - lh, f"  {row['va_mood']}", fontsize=7.5, color="#7777AA",
                     transform=ax.transAxes, va="top")
 
 
@@ -201,9 +220,17 @@ def plot(df: pd.DataFrame, out_path) -> None:
     dominant_mood = va_mood_counts.index[0]
     dominant_pct = va_mood_counts.iloc[0] / total * 100
 
-    fig = plt.figure(figsize=(20, 22), facecolor=BG)
-    gs = gridspec.GridSpec(5, 2, figure=fig, height_ratios=[0.5, 2.2, 2.2, 2.8, 2.5],
-                           hspace=0.55, wspace=0.35, left=0.06, right=0.96, top=0.93, bottom=0.04)
+    # 위 3행은 원본 크기(인치) 유지, 아래 그룹 목록 2행은 가장 큰 그룹에 맞춰 늘림
+    max_mood = int(va_mood_counts.max())
+    max_color = int(df["main_color_text"].value_counts(dropna=False).max())
+    heights = [1.08, 4.75, 4.75,
+               max(2.5, _group_row_height(max_mood, MOOD_BLOCK_LINES)),
+               max(2.0, _group_row_height(max_color, COLOR_BLOCK_LINES))]
+    hspace = 0.55
+    fig_h = sum(heights) * (1 + hspace * (len(heights) - 1) / len(heights)) / (0.93 - 0.04)
+    fig = plt.figure(figsize=(20, fig_h), facecolor=BG)
+    gs = gridspec.GridSpec(5, 2, figure=fig, height_ratios=heights,
+                           hspace=hspace, wspace=0.35, left=0.06, right=0.96, top=0.93, bottom=0.04)
     ax_title = fig.add_subplot(gs[0, :])
     ax_donut_a = fig.add_subplot(gs[1, 0])
     ax_donut_v = fig.add_subplot(gs[1, 1])
