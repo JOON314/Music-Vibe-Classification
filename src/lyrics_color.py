@@ -61,9 +61,45 @@ def load_emotion_lexicon(cfg: config.Config) -> pd.DataFrame:
     return lex
 
 
+def _adnominal(stem: str) -> str:
+    """어간의 관형형: 받침 없으면 ㄴ 받침 추가('슬프'→'슬픈'), 있으면 '은'('괜찮'→'괜찮은')."""
+    code = ord(stem[-1]) - 0xAC00
+    if 0 <= code < 11172 and code % 28 == 0:
+        return stem[:-1] + chr(ord(stem[-1]) + 4)  # 종성 ㄴ = 4
+    return stem + "은"
+
+
+def korean_predicate_forms(stem: str) -> list[str]:
+    """사전에서 찾아볼 한국어 동사·형용사 형태 (우선순위 순): 기본형 → 현재 관형형 → 관형형."""
+    return [stem + "다", stem + "는", _adnominal(stem)]
+
+
+def _lexicon_key(core_df: pd.DataFrame, lexicon_df: pd.DataFrame) -> pd.Series:
+    """사전 조회에 쓸 단어.
+
+    원본은 kiwi 어간('모르')을 그대로 찾아서 한국어 동사·형용사가 거의 매칭되지 않았다(31개 중 2개).
+    NRC 한국어는 영어 번역이라 기본형('키우다')이나 관형형('열리는', '슬픈')으로 들어 있으므로
+    korean_predicate_forms 순서대로 찾아보고, 없으면 어간 그대로 둔다.
+    """
+    kor_words = set(lexicon_df.loc[lexicon_df["lang"] == "kor", "word"])
+    is_kor_pred = (core_df["lang"] == "kor") & core_df["pos"].isin(config.KOREAN_PREDICATE_POS)
+
+    def key(word: str, pred: bool) -> str:
+        if pred:
+            for form in korean_predicate_forms(word):
+                if form in kor_words:
+                    return form
+        return word
+
+    return pd.Series([key(w, p) for w, p in zip(core_df["word"], is_kor_pred)], index=core_df.index)
+
+
 def match_keywords(core_df: pd.DataFrame, lexicon_df: pd.DataFrame) -> pd.DataFrame:
-    """(word, lang)로 사전과 left join. 사전에 없는 단어도 남기고 is_matched로 표시."""
-    matched = core_df.merge(lexicon_df, on=["word", "lang"], how="left")
+    """(사전 조회 단어, lang)로 사전과 left join. 사전에 없는 단어도 남기고 is_matched로 표시."""
+    core = core_df.copy()
+    core["lex_word"] = _lexicon_key(core, lexicon_df)
+    matched = core.merge(lexicon_df.rename(columns={"word": "lex_word"}),
+                         on=["lex_word", "lang"], how="left")
     matched["is_matched"] = ~matched[SCORES].isna().all(axis=1)
     matched[SCORES] = matched[SCORES].fillna(0)
     return matched

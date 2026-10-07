@@ -225,6 +225,7 @@ LYRICS_STOPWORDS = {
 EMOTION_COLS = ["joy", "sadness", "anger", "fear", "trust", "disgust", "surprise", "anticipation"]
 SENTIMENT_COLS = ["positive", "negative"]
 SCORE_COLS = EMOTION_COLS + SENTIMENT_COLS
+KOREAN_PREDICATE_POS = {"verb", "adjective"}   # 사전 조회 시 '어간+다' 기본형으로 찾는 품사
 
 # 감정 → (Hue 0~360, Saturation, Value)
 EMOTION_HSV_MAP: dict[str, tuple[float, float, float]] = {
