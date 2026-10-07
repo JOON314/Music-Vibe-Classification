@@ -40,7 +40,7 @@ def download_audio(title: str, artist: str, out_path: Path) -> Path:
         "postprocessors": [{"key": "FFmpegExtractAudio",
                             "preferredcodec": "wav",
                             "preferredquality": "192"}],
-        "quiet": True, "no_warnings": True,
+        "quiet": True, "no_warnings": True, "noprogress": True,
     }
     log.info("[다운로드] %s - %s", artist, title)
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
