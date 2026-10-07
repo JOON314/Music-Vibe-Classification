@@ -1,0 +1,580 @@
+﻿title,word,pos,lang,count
+곰팡이,회색,noun,kor,1
+곰팡이,새벽,noun,kor,1
+곰팡이,피우,verb,kor,5
+곰팡이,피어나,verb,kor,1
+곰팡이,곰팡이,noun,kor,2
+곰팡이,심술,noun,kor,1
+곰팡이,부리,verb,kor,1
+곰팡이,고개,noun,kor,1
+곰팡이,끄덕이,verb,kor,1
+곰팡이,끝나,verb,kor,2
+곰팡이,마음,noun,kor,2
+곰팡이,보이,verb,kor,2
+곰팡이,습기,noun,kor,2
+곰팡이,사랑,noun,kor,5
+곰팡이,창문,noun,kor,2
+곰팡이,소리,noun,kor,2
+곰팡이,키우,verb,kor,2
+곰팡이,어쩌,verb,kor,2
+곰팡이,어둠,noun,kor,1
+곰팡이,부둥켜안,verb,kor,1
+곰팡이,단서,noun,kor,1
+돌연변이,feel,verb,eng,3
+돌연변이,scared,adjective,eng,1
+돌연변이,world,noun,eng,1
+돌연변이,뒤집히,verb,kor,1
+돌연변이,baby,noun,eng,1
+돌연변이,alalablablablabla,noun,eng,1
+돌연변이,이해,noun,kor,1
+돌연변이,birthday,noun,eng,15
+돌연변이,go,verb,eng,3
+돌연변이,wrong,adjective,eng,3
+돌연변이,want,verb,eng,9
+돌연변이,blend,verb,eng,2
+돌연변이,live,verb,eng,3
+돌연변이,love,noun,eng,1
+돌연변이,사랑,noun,kor,1
+돌연변이,get,verb,eng,1
+돌연변이,sing,verb,eng,1
+돌연변이,sang,noun,eng,1
+돌연변이,song,noun,eng,1
+돌연변이,노래,noun,kor,1
+돌연변이,부르,verb,kor,1
+돌연변이,fail,adjective,eng,1
+돌연변이,tear,noun,eng,1
+돌연변이,tonight,noun,eng,3
+돌연변이,날아가,verb,kor,1
+돌연변이,look,verb,eng,4
+돌연변이,달걀,noun,kor,1
+돌연변이,fold,verb,eng,1
+돌연변이,bone,noun,eng,1
+돌연변이,mind,verb,eng,1
+돌연변이,돌아가,verb,kor,1
+돌연변이,die,verb,eng,2
+돌연변이,course,noun,eng,1
+어린양,아무것,noun,kor,1
+어린양,쳐다보,verb,kor,1
+어린양,상처,noun,kor,1
+어린양,낙오,noun,kor,1
+어린양,짐승,noun,kor,1
+어린양,목소리,noun,kor,1
+어린양,낮추,verb,kor,1
+어린양,바닥,noun,kor,1
+어린양,sin,noun,eng,2
+어린양,diose,verb,eng,2
+어린양,reye,noun,eng,2
+어린양,solo,noun,eng,2
+어린양,flores,noun,eng,1
+어린양,vino,noun,eng,1
+어린양,ninos,noun,eng,1
+어린양,ninas,noun,eng,1
+어린양,내주,verb,kor,1
+어린양,맞추,verb,kor,1
+어린양,숙이,verb,kor,1
+어린양,붉히,verb,kor,1
+어린양,얼굴,noun,kor,1
+어린양,사랑,noun,kor,1
+어린양,필요,noun,kor,1
+어린양,놔두,verb,kor,1
+어린양,소음,noun,kor,1
+어린양,먹히,verb,kor,1
+어린양,배경,noun,kor,1
+어린양,자라,verb,kor,1
+어린양,들풀,noun,kor,1
+어린양,면류관,noun,kor,1
+어린양,구원,noun,kor,1
+어린양,조금,noun,kor,2
+어린양,배우,verb,kor,2
+어린양,어리,adjective,kor,2
+어린양,이제,noun,kor,1
+어린양,이름,noun,kor,1
+어린양,모자,noun,kor,1
+어린양,인사,noun,kor,1
+어린양,대신,noun,kor,1
+어린양,baby,noun,eng,1
+어린양,찾아오,verb,kor,1
+Sunday girl,hot,adjective,eng,2
+Sunday girl,baby,noun,eng,2
+Sunday girl,오늘,noun,kor,1
+Sunday girl,끝내주,verb,kor,1
+Sunday girl,이쁘,adjective,kor,1
+Sunday girl,구두,noun,kor,1
+Sunday girl,미니,noun,kor,1
+Sunday girl,모르,verb,kor,1
+Sunday girl,맞추,verb,kor,1
+Sunday girl,달리,verb,kor,1
+Sunday girl,예전,noun,kor,2
+Sunday girl,대답,noun,kor,2
+Sunday girl,목마르,adjective,kor,1
+Sunday girl,사슴,noun,kor,1
+Sunday girl,지옥,noun,kor,1
+Sunday girl,원래,noun,kor,1
+Sunday girl,재작년,noun,kor,1
+Sunday girl,회개,noun,kor,1
+Sunday girl,복음,noun,kor,1
+Sunday girl,나가,verb,kor,1
+Sunday girl,스테고사우르스,noun,kor,1
+Sunday girl,브라키오사우르스,noun,kor,1
+Sunday girl,jesus,noun,eng,6
+Sunday girl,hold,verb,eng,1
+Sunday girl,hand,noun,eng,1
+Sunday girl,want,verb,eng,2
+Sunday girl,hallelujah,noun,eng,2
+Follow you(따라갈래),친구,noun,kor,3
+Follow you(따라갈래),당구장,noun,kor,1
+Follow you(따라갈래),모르,verb,kor,5
+Follow you(따라갈래),다음날,noun,kor,1
+Follow you(따라갈래),동생,noun,kor,1
+Follow you(따라갈래),졸업식,noun,kor,1
+Follow you(따라갈래),끝나,verb,kor,1
+Follow you(따라갈래),따라가,verb,kor,5
+Follow you(따라갈래),처음,noun,kor,2
+Follow you(따라갈래),좋아하,verb,kor,1
+Follow you(따라갈래),baby,noun,eng,9
+Follow you(따라갈래),괜찮,adjective,kor,3
+Follow you(따라갈래),허스키,noun,kor,1
+Follow you(따라갈래),도망,noun,kor,1
+Follow you(따라갈래),학교,noun,kor,1
+Follow you(따라갈래),늑대,noun,kor,1
+Follow you(따라갈래),나타나,verb,kor,1
+Follow you(따라갈래),얘기,noun,kor,1
+Follow you(따라갈래),운동장,noun,kor,1
+Follow you(따라갈래),포기,noun,kor,1
+Follow you(따라갈래),기다리,verb,kor,2
+Follow you(따라갈래),아무것,noun,kor,1
+Follow you(따라갈래),이제,noun,kor,1
+Follow you(따라갈래),목줄,noun,kor,1
+Follow you(따라갈래),자라,verb,kor,1
+Follow you(따라갈래),들개,noun,kor,1
+Jersey girl,daddy,noun,eng,3
+Jersey girl,brother,noun,eng,2
+Jersey girl,asleep,adjective,eng,2
+Jersey girl,jersey,noun,eng,8
+Jersey girl,sleep,verb,eng,2
+Jersey girl,tell,verb,eng,2
+Jersey girl,friend,noun,eng,2
+Jersey girl,town,noun,eng,4
+Jersey girl,dry,adjective,eng,1
+Jersey girl,shady,adjective,eng,1
+Jersey girl,russian,adjective,eng,1
+Jersey girl,kid,noun,eng,1
+Jersey girl,shit,noun,eng,1
+Jersey girl,come,verb,eng,1
+Jersey girl,let,verb,eng,2
+Jersey girl,tuck,verb,eng,1
+Jersey girl,car,noun,eng,1
+Jersey girl,drive,verb,eng,1
+Jersey girl,bag,noun,eng,1
+Jersey girl,zigzag,noun,eng,1
+Jersey girl,crawl,verb,eng,1
+Jersey girl,bored,adjective,eng,1
+Jersey girl,sock,noun,eng,1
+Jersey girl,tie,verb,eng,1
+Jersey girl,kick,noun,eng,1
+Jersey girl,leave,verb,eng,1
+Jersey girl,stupid,adjective,eng,1
+Jersey girl,little,adjective,eng,1
+Jersey girl,hope,verb,eng,2
+Jersey girl,true,adjective,eng,2
+Jersey girl,stay,verb,eng,4
+Jersey girl,safe,adjective,eng,2
+Jersey girl,sound,adjective,eng,2
+Jersey girl,work,verb,eng,2
+Jersey girl,cvs,noun,eng,2
+Jersey girl,think,verb,eng,2
+Jersey girl,candy,noun,eng,2
+Jersey girl,steal,verb,eng,2
+Jersey girl,everyday,noun,eng,2
+Jersey girl,time,noun,eng,2
+Jersey girl,job,noun,eng,2
+Jersey girl,blockbuster,noun,eng,2
+Jersey girl,burn,verb,eng,2
+Jersey girl,dvd,noun,eng,2
+Jersey girl,want,verb,eng,1
+Jersey girl,need,verb,eng,1
+Jersey girl,degree,noun,eng,1
+Jersey girl,wait,verb,eng,1
+Jersey girl,video,noun,eng,1
+Jersey girl,mtv,noun,eng,1
+Love you the same,mall,noun,eng,1
+Love you the same,hole,noun,eng,1
+Love you the same,need,verb,eng,1
+Love you the same,drive,verb,eng,1
+Love you the same,come,verb,eng,3
+Love you the same,play,verb,eng,2
+Love you the same,go,verb,eng,1
+Love you the same,dance,verb,eng,1
+Love you the same,embarrass,verb,eng,1
+Love you the same,laugh,verb,eng,1
+Love you the same,talk,noun,eng,2
+Love you the same,run,verb,eng,1
+Love you the same,know,verb,eng,2
+Love you the same,take,verb,eng,1
+Love you the same,leave,verb,eng,1
+Love you the same,fuck,verb,eng,2
+Love you the same,town,noun,eng,2
+Love you the same,friend,noun,eng,5
+Love you the same,love,verb,eng,6
+Love you the same,lover,noun,eng,3
+Love you the same,feel,verb,eng,3
+Love you the same,confused,adjective,eng,3
+Love you the same,telephone,noun,eng,1
+Love you the same,let,verb,eng,1
+Love you the same,hear,verb,eng,1
+Love you the same,good,adjective,eng,2
+Love you the same,news,noun,eng,1
+Love you the same,dry,adjective,eng,1
+Love you the same,way,noun,eng,1
+Love you the same,long,adjective,eng,1
+Love you the same,sweet,adjective,eng,1
+Love you the same,thing,noun,eng,1
+Love you the same,true,adjective,eng,1
+Love you the same,heart,noun,eng,1
+Love you the same,choose,verb,eng,1
+Powder blue,달구,verb,kor,1
+Powder blue,외로움,noun,kor,1
+Powder blue,지지,verb,kor,1
+Powder blue,사랑,noun,kor,1
+Powder blue,먼지,noun,kor,1
+Powder blue,베이비,noun,kor,2
+Powder blue,방향,noun,kor,1
+Powder blue,속도,noun,kor,1
+Powder blue,빠르,adjective,kor,1
+Powder blue,powder,noun,eng,8
+Powder blue,blue,adjective,eng,10
+Powder blue,달아나,verb,kor,2
+Powder blue,부끄럼,noun,kor,2
+Powder blue,뻔하,adjective,kor,2
+Powder blue,순간,noun,kor,2
+Powder blue,열리,verb,kor,2
+Powder blue,버리,verb,kor,1
+Powder blue,분실물,noun,kor,1
+Powder blue,원하,verb,kor,1
+Powder blue,잃어버리,verb,kor,1
+Powder blue,문제,noun,kor,1
+Powder blue,지키,verb,kor,1
+Powder blue,기대,noun,kor,1
+Powder blue,틀리,verb,kor,1
+Powder blue,love,noun,eng,2
+Powder blue,cliche,noun,eng,2
+Powder blue,wanna,verb,eng,2
+Powder blue,paint,verb,eng,2
+Powder blue,rock,noun,eng,2
+Powder blue,roll,noun,eng,2
+Powder blue,wet,adjective,eng,2
+Powder blue,dream,noun,eng,2
+Powder blue,come,verb,eng,2
+Powder blue,true,adjective,eng,2
+Tent,텐트,noun,kor,5
+Tent,운동화,noun,kor,3
+Tent,왼쪽,noun,kor,2
+Tent,린다,noun,kor,3
+Tent,갈색,noun,kor,2
+Tent,구두,noun,kor,4
+Tent,침낭,noun,kor,1
+Tent,한쪽,noun,kor,1
+Tent,취중,noun,kor,1
+Tent,낮잠,noun,kor,1
+Tent,소리,noun,kor,1
+Tent,의미,noun,kor,1
+Tent,평화,noun,kor,1
+Tent,때쯤,noun,kor,1
+Tent,나가,verb,kor,1
+Tent,도시,noun,kor,1
+Tent,불빛,noun,kor,1
+Tent,구경,noun,kor,1
+Tent,그날,noun,kor,1
+Tent,덜컹거리,verb,kor,1
+Tent,열차,noun,kor,1
+Tent,우주,noun,kor,1
+Tent,입맞춤,noun,kor,1
+Tent,차례,noun,kor,1
+Tent,꿰매,verb,kor,1
+Tent,누더기,noun,kor,1
+Tent,하룻밤,noun,kor,1
+Tent,바지런,noun,kor,1
+Tent,떠나,verb,kor,1
+파란달팽이,이제,noun,kor,10
+파란달팽이,이번,noun,kor,10
+파란달팽이,처음,noun,kor,10
+파란달팽이,마지막,noun,kor,10
+파란달팽이,노력,noun,kor,2
+파란달팽이,받아들이,verb,kor,2
+파란달팽이,편하,adjective,kor,2
+파란달팽이,피하,verb,kor,2
+파란달팽이,돌아가,verb,kor,2
+파란달팽이,용기,noun,kor,1
+파란달팽이,심하,adjective,kor,1
+파란달팽이,망치,verb,kor,1
+파란달팽이,슬프,adjective,kor,1
+파란달팽이,가지,verb,kor,1
+파란달팽이,영원,noun,kor,1
+파란달팽이,꿈꾸,verb,kor,1
+파란달팽이,구르,verb,kor,1
+파란달팽이,껍질,noun,kor,1
+파란달팽이,두르,verb,kor,1
+파란달팽이,세상,noun,kor,1
+파란달팽이,기분,noun,kor,1
+포커페이스,취하,verb,kor,2
+포커페이스,피하,verb,kor,1
+포커페이스,시간,noun,kor,3
+포커페이스,오리,verb,kor,1
+포커페이스,서면,noun,kor,1
+포커페이스,그림자,noun,kor,2
+포커페이스,패션,noun,kor,2
+포커페이스,스타일,noun,kor,2
+포커페이스,실수,noun,kor,2
+포커페이스,자리,noun,kor,2
+포커페이스,채우,verb,kor,2
+포커페이스,꼴통,noun,kor,2
+포커페이스,모르,verb,kor,13
+포커페이스,부서지,verb,kor,3
+포커페이스,소리,noun,kor,3
+포커페이스,이해,noun,kor,1
+포커페이스,오해,noun,kor,2
+포커페이스,오래전,noun,kor,2
+포커페이스,편지,noun,kor,1
+포커페이스,보내,verb,kor,1
+포커페이스,머리,noun,kor,1
+포커페이스,호세,noun,kor,1
+포커페이스,기분,noun,kor,1
+포커페이스,느끼,verb,kor,1
+seasons,love,noun,eng,3
+seasons,look,verb,eng,1
+seasons,trivial,adjective,eng,1
+seasons,life,noun,eng,4
+seasons,know,verb,eng,1
+seasons,disappear,verb,eng,1
+seasons,pray,verb,eng,2
+seasons,time,noun,eng,2
+seasons,season,noun,eng,3
+seasons,afraid,adjective,eng,1
+seasons,ruin,verb,eng,1
+seasons,leaf,noun,eng,1
+seasons,wither,verb,eng,1
+seasons,grow,verb,eng,1
+seasons,go,verb,eng,1
+seasons,push,verb,eng,1
+seasons,daisy,noun,eng,1
+seasons,bring,verb,eng,1
+seasons,chance,noun,eng,1
+echo,혼자,noun,kor,3
+echo,당연,noun,kor,1
+echo,얘기,noun,kor,1
+echo,꽃나무,noun,kor,1
+echo,사랑,noun,kor,4
+echo,시간,noun,kor,3
+echo,지나,verb,kor,1
+echo,사라지,verb,kor,1
+echo,슬프,adjective,kor,2
+echo,돌아오,verb,kor,2
+echo,낙엽,noun,kor,1
+echo,축이,verb,kor,1
+echo,마음,noun,kor,2
+echo,울음,noun,kor,2
+echo,소리,noun,kor,1
+echo,처지,noun,kor,1
+echo,잠깐,noun,kor,1
+echo,공기,noun,kor,1
+echo,이유,noun,kor,1
+echo,만나,verb,kor,1
+echo,부르,verb,kor,1
+echo,문제,noun,kor,1
+echo,나무,noun,kor,1
+echo,이야기,noun,kor,2
+echo,사실,noun,kor,1
+echo,오늘,noun,kor,2
+echo,어둠,noun,kor,1
+echo,토하,verb,kor,1
+echo,시들,verb,kor,1
+echo,눈물,noun,kor,1
+echo,흘리,verb,kor,1
+사랑하게 될거야,영원,noun,kor,1
+사랑하게 될거야,꿈꾸,verb,kor,1
+사랑하게 될거야,떠나보내,verb,kor,2
+사랑하게 될거야,슬퍼하,verb,kor,1
+사랑하게 될거야,오늘,noun,kor,1
+사랑하게 될거야,피하,verb,kor,1
+사랑하게 될거야,자라나,verb,kor,1
+사랑하게 될거야,얼마,noun,kor,1
+사랑하게 될거야,후회,noun,kor,1
+사랑하게 될거야,채우,verb,kor,1
+사랑하게 될거야,유리잔,noun,kor,1
+사랑하게 될거야,내려다보,verb,kor,1
+사랑하게 될거야,휘몰아치,verb,kor,3
+사랑하게 될거야,불구하,verb,kor,3
+사랑하게 될거야,용서,noun,kor,3
+사랑하게 될거야,사랑,noun,kor,4
+사랑하게 될거야,아파하,verb,kor,1
+사랑하게 될거야,아프,adjective,kor,1
+사랑하게 될거야,기억,noun,kor,1
+사랑하게 될거야,불안,noun,kor,1
+사랑하게 될거야,모나,adjective,kor,1
+사랑하게 될거야,쥐이,verb,kor,1
+사랑하게 될거야,깨지,verb,kor,1
+사랑하게 될거야,조각,noun,kor,1
+사랑하게 될거야,나오,verb,kor,1
+사랑하게 될거야,눈물,noun,kor,1
+사랑하게 될거야,터뜨리,verb,kor,1
+완공,완공,noun,kor,7
+완공,squad,noun,eng,7
+완공,yellow,noun,eng,10
+완공,monkey,noun,eng,10
+완공,music,noun,eng,5
+완공,각본,noun,kor,5
+완공,natural,adjective,eng,5
+완공,magic,noun,eng,5
+완공,소주,noun,kor,3
+완공,원샷,noun,kor,3
+완공,브라보,noun,kor,3
+완공,빨뚜,noun,kor,3
+완공,classic,noun,eng,3
+완공,신보,noun,kor,3
+완공,assassin,noun,eng,3
+완공,팬심,noun,kor,1
+완공,넘어지,verb,kor,1
+완공,안상,noun,kor,1
+완공,뱃심,noun,kor,1
+완공,아가리,noun,kor,1
+완공,대신,noun,kor,1
+완공,행보,noun,kor,1
+완공,갱신,noun,kor,1
+완공,최신,noun,kor,1
+완공,stun,noun,eng,1
+완공,가위,noun,kor,1
+완공,주먹,noun,kor,1
+완공,study,noun,eng,1
+완공,믿기,verb,kor,1
+완공,벌이,noun,kor,1
+완공,음악,noun,kor,1
+완공,나오,verb,kor,1
+완공,재미없,adjective,kor,1
+완공,쩌리,noun,kor,1
+완공,하루,noun,kor,1
+완공,종일,noun,kor,1
+완공,컴퓨터,noun,kor,1
+완공,버티,verb,kor,1
+완공,start,verb,eng,1
+완공,메이플스토리,noun,kor,1
+완공,big,adjective,eng,1
+완공,money,noun,eng,1
+완공,거만,noun,kor,1
+완공,끝자리,noun,kor,1
+완공,brand,noun,eng,2
+완공,new,adjective,eng,2
+완공,car,noun,eng,1
+완공,carrot,noun,eng,1
+완공,yello,noun,eng,1
+완공,asian,noun,eng,1
+완공,한계,noun,kor,1
+완공,ain,verb,eng,1
+완공,stop,verb,eng,1
+완공,pedal,noun,eng,1
+완공,metal,noun,eng,1
+완공,trip,noun,eng,1
+완공,stress,noun,eng,1
+완공,nature,noun,eng,1
+완공,high,adjective,eng,1
+완공,요즘,noun,kor,2
+완공,취미,noun,kor,1
+완공,여권,noun,kor,1
+완공,도장,noun,kor,1
+완공,조회,noun,kor,1
+완공,매수,noun,kor,1
+완공,껍질,noun,kor,1
+완공,세상,noun,kor,1
+완공,속이,verb,kor,1
+완공,자신,noun,kor,1
+완공,에베레스트,noun,kor,1
+완공,정도,noun,kor,1
+완공,에르메스,noun,kor,1
+완공,헬멧,noun,kor,1
+완공,새끼,noun,kor,1
+완공,시간,noun,kor,1
+완공,기깔,noun,kor,1
+완공,치약,noun,kor,1
+완공,fresh,adjective,eng,1
+완공,시야,noun,kor,1
+완공,clean,adjective,eng,1
+완공,sia,noun,eng,1
+완공,주얼리,noun,kor,1
+완공,지하,noun,kor,1
+완공,come,verb,eng,1
+완공,국산,noun,kor,2
+완공,외치,verb,kor,2
+완공,kia,noun,eng,2
+완공,보태,verb,kor,1
+완공,욕하,verb,kor,1
+완공,올라가,verb,kor,1
+완공,씨앗,noun,kor,1
+완공,ay,noun,eng,1
+완공,yo,noun,eng,1
+완공,kidstone,noun,eng,1
+완공,want,verb,eng,1
+완공,mo,noun,eng,1
+노세노세,시작,noun,kor,3
+노세노세,시간,noun,kor,5
+노세노세,움직이,verb,kor,3
+노세노세,다리,noun,kor,3
+노세노세,genesis,verb,eng,3
+노세노세,hop,noun,eng,3
+노세노세,냅두,verb,kor,3
+노세노세,이재용,noun,kor,3
+노세노세,파티,noun,kor,3
+노세노세,똥구멍,noun,kor,3
+노세노세,나이,noun,kor,4
+노세노세,beautiful,adjective,eng,3
+노세노세,shawty,noun,eng,3
+노세노세,시계,noun,kor,4
+노세노세,부르,verb,kor,3
+노세노세,노세,noun,kor,12
+노세노세,ballin,noun,eng,1
+노세노세,루이비통,noun,kor,1
+노세노세,벨트,noun,kor,1
+노세노세,허리,noun,kor,1
+노세노세,diamond,noun,eng,1
+노세노세,chain,noun,eng,1
+노세노세,flex,noun,eng,1
+노세노세,terminate,noun,eng,1
+노세노세,짓거리,noun,kor,1
+노세노세,앞가림,noun,kor,1
+노세노세,과민,noun,kor,1
+노세노세,만들,verb,kor,1
+노세노세,이빨,noun,kor,1
+노세노세,갈리,verb,kor,1
+노세노세,이러,verb,kor,1
+노세노세,laminate,noun,eng,1
+노세노세,알몸,noun,kor,1
+노세노세,lie,noun,eng,1
+노세노세,발목,noun,kor,1
+노세노세,잡히,verb,kor,1
+노세노세,달리,verb,kor,1
+노세노세,이기,verb,kor,1
+노세노세,problem,noun,eng,1
+노세노세,fly,verb,eng,1
+노세노세,자라,verb,kor,1
+노세노세,어리,adjective,kor,1
+노세노세,방송,noun,kor,1
+노세노세,창조,noun,kor,1
+노세노세,lifestyle,noun,eng,1
+노세노세,조빱,noun,kor,1
+노세노세,월급,noun,kor,1
+노세노세,돌아가,verb,kor,1
+노세노세,단칸방,noun,kor,1
+노세노세,착장,noun,kor,1
+노세노세,shit,noun,eng,1
+노세노세,찐퉁,noun,kor,1
+노세노세,쌍당,noun,kor,1
+노세노세,혓바닥,noun,kor,1
+노세노세,tik,adjective,eng,1
+노세노세,tok,noun,eng,1
+노세노세,pop,noun,eng,1
+노세노세,방식,noun,kor,1
+노세노세,반칙,noun,kor,1
+노세노세,거리,verb,kor,1
+노세노세,아가리,noun,kor,1
+노세노세,소매,noun,kor,1
+노세노세,데이토나,noun,kor,1
+노세노세,모르,verb,kor,1
+노세노세,새끼,noun,kor,1
