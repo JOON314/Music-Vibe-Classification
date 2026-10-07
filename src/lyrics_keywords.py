@@ -31,10 +31,10 @@ def _nlp():
     return Kiwi(), Stopwords(), spacy.load(config.SPACY_MODEL)
 
 
-def split_lyrics(lyrics: object) -> list[str] | None:
-    """가사를 줄 → 문장부호 순으로 나눈다.
+def split_lyrics(lyrics: object) -> list[str]:
+    """가사를 줄 → 문장부호 → 15단어 묶음 순으로 나눈다.
 
-    원본 동작 유지: 둘 다 1조각 이하면 None을 반환한다(15단어 분할 코드는 원본에서 도달 불가).
+    원본은 15단어 분할이 return 뒤에 들여쓰기되어 실행되지 않았고, 한 줄 가사는 None → 토큰 0개였다.
     """
     text = str(lyrics)
 
@@ -46,7 +46,9 @@ def split_lyrics(lyrics: object) -> list[str] | None:
     if len(sentences) > 1:
         return sentences
 
-    return None
+    words = text.split()
+    n = config.SPLIT_CHUNK_WORDS
+    return [" ".join(words[i:i + n]) for i in range(0, len(words), n)]
 
 
 def guess_language(text: str) -> str:

@@ -166,6 +166,7 @@ MIN_WORD_LENGTH = 2       # 지나치게 짧은 단어 제외
 MIN_COUNT_IN_SONG = 2     # 곡 안에서 너무 적게 나온 단어 제외
 MAX_GLOBAL_RATIO = 0.7    # (원본에서 비활성화된 필터, 값만 보관)
 SUMMARY_TOP_N = 20
+SPLIT_CHUNK_WORDS = 15    # 줄·문장 구분이 없는 가사를 나누는 단어 수
 ALLOWED_POS = {"noun", "verb", "adjective"}
 SPACY_MODEL = "en_core_web_sm"
 
