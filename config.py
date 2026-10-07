@@ -39,8 +39,9 @@ class Config:
         return self.data_dir / "deam_labels_avg_mood.csv"
 
     @property
-    def lexicon_csv(self) -> Path:
-        return self.data_dir / "emotion_lexicon.csv"
+    def lexicon_txt(self) -> Path:
+        # NRC EmoLex 한·영 버전 (English Word, 감정 10열, Korean Word; 탭 구분)
+        return self.data_dir / "Korean-NRC-EmoLex.txt"
 
     # ── 단계별 산출물 (outputs/)
     @property

@@ -70,8 +70,7 @@ Final/
 ├── data/         # 학습 데이터·감정 사전
 │   ├── deam_features_mean.csv     # DEAM 1802곡 openSMILE 피처 곡 평균 (학습 X)
 │   ├── deam_labels_avg_mood.csv   # DEAM valence/arousal 평균 1~9 (학습 Y)
-│   ├── emotion_lexicon.csv        # NRC 한·영 감정 사전 (word, lang, 감정 10열)
-│   └── Korean-NRC-EmoLex.txt      # NRC 원본
+│   └── Korean-NRC-EmoLex.txt      # NRC EmoLex 한·영 감정 사전 (5단계에서 (word, lang)당 1행으로 정리해 사용)
 ├── models/       # 학습된 모델 저장 위치
 ├── outputs/      # 단계별 산출물
 ├── _baseline/    # 리팩터링 전 원본 결과 (비교 기준)

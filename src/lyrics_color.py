@@ -1,9 +1,9 @@
 """5단계: 핵심 키워드 → NRC 8감정 점수 → 곡별 대표 감정 → 색.
 
-입력: outputs/04_core_keywords.csv, data/emotion_lexicon.csv
+입력: outputs/04_core_keywords.csv, data/Korean-NRC-EmoLex.txt
 출력: outputs/05_matched_emotions.csv, outputs/05_song_emotion_color.csv
 
-사전 형식: word, lang, joy, sadness, anger, fear, trust, surprise, disgust, anticipation, positive, negative
+사전: NRC EmoLex의 영어 단어(lang=eng)와 한국어 번역(lang=kor)을 한 표로 쌓아 (word, lang)당 1행으로 만든다.
 """
 from __future__ import annotations
 
@@ -34,16 +34,31 @@ def load_core_keywords(cfg: config.Config) -> pd.DataFrame:
 
 
 def load_emotion_lexicon(cfg: config.Config) -> pd.DataFrame:
-    """감정 사전을 읽고 word/lang 정리, 점수 컬럼을 float으로 맞춘다."""
-    df = pd.read_csv(cfg.lexicon_csv)
-    missing = {"word", "lang", *SCORES} - set(df.columns)
+    """NRC 한·영 사전을 (word, lang)당 1행으로 만든다.
+
+    원본은 이 파일을 쌓아 둔 emotion_lexicon.csv(+ 테스트용 4행)를 썼고, 같은 (word, lang)이
+    여러 행(예: 한국어 '당황' 9행)이라 merge 시 키워드가 중복 매칭되어 점수가 여러 번 더해졌다.
+    여러 영어 단어가 같은 한국어로 번역된 경우 감정 표시가 서로 달라서, 감정별 평균(해당 감정을
+    가진 원어 비율, 0~1)으로 합친다.
+    """
+    raw = pd.read_csv(cfg.lexicon_txt, sep="\t")
+    missing = {"English Word", "Korean Word", *SCORES} - set(raw.columns)
     if missing:
-        raise ValueError(f"emotion lexicon csv missing columns: {missing}")
+        raise ValueError(f"emotion lexicon missing columns: {missing}")
+
+    parts = [
+        raw.rename(columns={"English Word": "word"}).assign(lang="eng"),
+        raw.rename(columns={"Korean Word": "word"}).assign(lang="kor"),
+    ]
+    df = pd.concat(parts, ignore_index=True)[["word", "lang", *SCORES]]
+    df = df.dropna(subset=["word"])
     df["word"] = df["word"].astype(str).str.strip().str.lower()
-    df["lang"] = df["lang"].astype(str).str.strip().str.lower()
     for col in SCORES:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(float)
-    return df
+
+    lex = df.groupby(["word", "lang"], as_index=False)[SCORES].mean()
+    log.info("감정 사전: %d행 → (word, lang) %d개", len(df), len(lex))
+    return lex
 
 
 def match_keywords(core_df: pd.DataFrame, lexicon_df: pd.DataFrame) -> pd.DataFrame:
